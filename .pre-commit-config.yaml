@@ -1,0 +1,35 @@
+repos:
+  # Secret detection — runs FIRST, before anything else
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
+        name: "gitleaks: detect secrets"
+
+  # Ruff — linting + formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.6
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  # Mypy — type checking
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy --strict
+        language: system
+        entry: uv run mypy src/ajaa --strict
+        types: [python]
+        pass_filenames: false
+
+  # No personal strings in source
+  - repo: local
+    hooks:
+      - id: no-personal-strings
+        name: "guard: no personal strings in source"
+        language: system
+        entry: uv run pytest tests/unit/test_no_personal_strings.py -q
+        pass_filenames: false
+        stages: [pre-push]

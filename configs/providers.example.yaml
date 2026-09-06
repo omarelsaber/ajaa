@@ -1,0 +1,66 @@
+# ============================================================
+# AJAA — providers.example.yaml
+# Copy this to: %APPDATA%\ajaa\providers.yaml (Windows)
+#               ~/.config/ajaa/providers.yaml  (Linux/macOS)
+# Then fill in your real values.
+# ============================================================
+#
+# IMPORTANT: NEVER commit the real providers.yaml to git.
+# The API key must be stored in the OS keychain (keyring).
+# Run:  ajaa init --set-api-key
+# to store the key securely. Do not put it in this file.
+# ============================================================
+
+default_provider: agent_router
+
+providers:
+  agent_router:
+    # Agent Router — OpenAI-compatible endpoint
+    base_url: "https://agentrouter.org/v1"
+    # Key is stored in OS keychain. Name used to retrieve it:
+    keychain_service: "ajaa"
+    keychain_key: "agent_router_api_key"
+    # Prompt caching: set true if provider supports it
+    prompt_caching: false
+    # Timeout per request (seconds)
+    timeout: 120
+
+# ── TIER → MODEL MAPPING ────────────────────────────────────
+# cheap: high-volume, fast (field classification, requirement extraction)
+# mid:   medium complexity (match adjudication, recovery reasoning)
+# strong: low-volume, high-quality (CV extraction, answer generation)
+# vision: screenshot understanding (v0.3+, restricted use)
+tiers:
+  cheap:
+    model: "deepseek-v4-flash"
+    provider: agent_router
+    max_tokens: 4096
+    temperature: 0.0
+  mid:
+    model: "claude-opus-4-5"
+    provider: agent_router
+    max_tokens: 8192
+    temperature: 0.0
+  strong:
+    model: "claude-opus-5"
+    provider: agent_router
+    max_tokens: 16384
+    temperature: 0.0
+  vision:
+    model: "claude-opus-5"
+    provider: agent_router
+    max_tokens: 4096
+    temperature: 0.0
+
+# ── PRICING (for cost ledger — update if prices change) ─────
+# Units: USD per 1M tokens
+pricing:
+  deepseek-v4-flash:
+    input: 0.14
+    output: 0.28
+  claude-opus-4-5:
+    input: 3.00
+    output: 15.00
+  claude-opus-5:
+    input: 15.00
+    output: 75.00

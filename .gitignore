@@ -1,0 +1,104 @@
+# ── AJAA DATA DIRECTORY (ALWAYS OUTSIDE THE REPO) ─────────────────────────────
+# These paths should live in %LOCALAPPDATA%\ajaa or ~/.local/share/ajaa
+# If any of these appear here, something is WRONG. ajaa doctor will warn.
+*.db
+*.db-wal
+*.db-shm
+/data/
+/artifacts/
+/browser_profiles/
+/cvs/
+/extractions/
+/emails/
+/backups/
+
+# ── SECRETS & CREDENTIALS ──────────────────────────────────────────────────────
+# NEVER commit credentials. Use OS keychain (keyring).
+.env
+.env.*
+*.key
+*.pem
+*.p12
+secrets.yaml
+credentials.json
+
+# ── USER CONFIG (contains real values) ────────────────────────────────────────
+# The configs/ directory in the repo contains TEMPLATES only (*.example.yaml).
+# The user's real config lives in %APPDATA%\ajaa or ~/.config/ajaa
+configs/providers.yaml
+configs/policy.yaml
+configs/sources.yaml
+configs/matching.yaml
+configs/settings.yaml
+
+# ── LOGS FROM REAL RUNS ────────────────────────────────────────────────────────
+logs/
+*.jsonl
+ajaa.log
+
+# ── PYTHON ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ── UV / VIRTUAL ENVIRONMENTS ─────────────────────────────────────────────────
+.venv/
+venv/
+ENV/
+env/
+.uv/
+
+# ── TESTING ───────────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.hypothesis/
+# Playwright test artifacts (from real runs — NOT fixtures)
+test-results/
+playwright-report/
+
+# ── TYPE CHECKING ─────────────────────────────────────────────────────────────
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+
+# ── EDITORS ───────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+desktop.ini
+ehthumbs.db
+
+# ── PLAYWRIGHT BROWSER BINARIES (installed separately) ────────────────────────
+# These are large; reinstalled via playwright install
+ms-playwright/
+
+# ── DOCS BUILD ────────────────────────────────────────────────────────────────
+docs/_build/
+site/

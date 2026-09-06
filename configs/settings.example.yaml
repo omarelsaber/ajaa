@@ -1,0 +1,48 @@
+# ============================================================
+# AJAA — settings.example.yaml
+# Copy to: %APPDATA%\ajaa\settings.yaml
+# ============================================================
+
+# Display name — shown in the UI only, never used in logic or prompts
+display_name: "Your Name Here"
+
+# Primary locale for interview questions and polarity matching
+locale: "en-US"
+
+# Web server
+server:
+  host: "127.0.0.1"   # NEVER change to 0.0.0.0 without understanding implications
+  port: 8000
+  reload: false
+
+# Logging
+logging:
+  level: "INFO"
+  jsonl: true
+  redact_pii: true     # NEVER set to false in production
+
+# Backup
+backup:
+  enabled: true
+  retention_days: 14
+  schedule: "0 2 * * *"   # 2am daily (cron expression)
+
+# Job freshness
+freshness:
+  ttl_hours: 24            # re-check a job's liveness if older than this
+  request_timeout_s: 10
+
+# Browser
+browser:
+  channel: "chromium"
+  headless: false          # false for review gate; true for unattended (v0.2+)
+  slow_mo_ms: 0
+  process_recycle_every: 25   # new browser process every N applications
+
+# Email (optional — leave null to disable)
+email:
+  smtp_host: null
+  smtp_port: 587
+  smtp_user: null
+  # Password stored in OS keychain: ajaa / smtp_password
+  dry_run_output_dir: null   # if set, emails are written to .eml files instead

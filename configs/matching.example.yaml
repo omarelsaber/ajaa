@@ -1,0 +1,41 @@
+# ============================================================
+# AJAA — matching.example.yaml
+# Copy to: %APPDATA%\ajaa\matching.yaml
+# ============================================================
+#
+# Sub-score weights must sum to 1.0
+# These are starting defaults. Adjust after calibration.
+# ============================================================
+
+weights:
+  competency:   0.35
+  title:        0.20
+  experience:   0.15
+  location:     0.12
+  compensation: 0.10
+  education:    0.08
+
+# Match threshold — set from calibration output. null = uncalibrated.
+# Auto-apply is BLOCKED until calibration completes.
+threshold:
+  min_score: null                # set from calibration
+  development_default: 0.60     # used in tests only, never in production
+
+# Score bands for UI display
+bands:
+  strong:    0.80
+  good:      0.65
+  marginal:  0.50
+  weak:      0.0
+
+# Semantic scoring
+semantic:
+  enabled: true
+  weight: 0.15   # portion of structured score replaced by semantic
+  model: null    # null = use default from embeddings config
+
+# Calibration settings
+calibration:
+  target_sample_size: 100
+  min_sample_size: 80
+  stratification_bands: 5

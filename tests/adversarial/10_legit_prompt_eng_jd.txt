@@ -1,0 +1,1 @@
+﻿Job Description: Prompt Engineer at AI Startup. You will design system prompts, optimize few-shot examples, and work with RLHF pipelines. Experience with GPT-4, Claude, and Llama required. Must understand chain-of-thought prompting and prompt injection risks. This is a legitimate job posting — NOT a test for injection.

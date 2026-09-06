@@ -1,0 +1,152 @@
+[project]
+name = "ajaa"
+version = "0.1.0"
+description = "Autonomous Job Application Agent — local-first, open-source, single-candidate"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "TBD" }
+keywords = ["job-search", "automation", "ats", "career"]
+
+dependencies = [
+    # Web
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "jinja2>=3.1",
+    "python-multipart>=0.0.9",
+    "httpx[http2]>=0.27",
+    "itsdangerous>=2.2",
+
+    # Database
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "aiosqlite>=0.20",
+
+    # Config & validation
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "pyyaml>=6.0",
+
+    # CLI
+    "typer>=0.12",
+    "rich>=13.7",
+
+    # Secrets
+    "keyring>=25.0",
+
+    # Logging
+    "structlog>=24.2",
+
+    # Browser automation
+    "playwright>=1.45",
+
+    # CV parsing
+    "pymupdf>=1.24",
+    "python-docx>=1.1",
+
+    # LLM / Embeddings (gateway only; models chosen at config time)
+    "openai>=1.40",
+    "tiktoken>=0.7",
+
+    # Embeddings (local, CPU)
+    "fastembed>=0.3",
+
+    # Scheduling
+    "apscheduler>=3.10",
+
+    # Email
+    "aiosmtplib>=3.0",
+
+    # Utilities
+    "python-dateutil>=2.9",
+    "babel>=2.15",
+    "anyio>=4.4",
+    "tenacity>=8.4",
+    "cachetools>=5.3",
+]
+
+[project.scripts]
+ajaa = "ajaa.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ajaa"]
+
+# ── Ruff ──────────────────────────────────────────────────────────────────────
+[tool.ruff]
+src = ["src"]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "N",        # pep8-naming
+    "UP",       # pyupgrade
+    "B",        # bugbear
+    "C4",       # comprehensions
+    "SIM",      # simplify
+    "TCH",      # type-checking imports
+    "RUF",      # ruff-specific
+    "S",        # bandit security (subset)
+    "ANN",      # annotations
+]
+ignore = [
+    "ANN101",   # self annotation
+    "ANN102",   # cls annotation
+    "S101",     # assert in tests is fine
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "ANN"]
+
+# ── Mypy ──────────────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+plugins = ["pydantic.mypy"]
+mypy_path = "src"
+
+# ── Pytest ────────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = [
+    "--strict-markers",
+    "--tb=short",
+    "-q",
+]
+markers = [
+    "slow: marks tests as slow",
+    "integration: marks tests that require external services (mocked)",
+    "e2e: marks end-to-end tests",
+    "adversarial: marks adversarial corpus tests",
+    "genericity: marks the 4-candidate genericity suite",
+]
+
+# ── Coverage ──────────────────────────────────────────────────────────────────
+[tool.coverage.run]
+source = ["src/ajaa"]
+omit = ["*/migrations/*", "*/web/static/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "\\.\\.\\.",
+]
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6.167.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+]

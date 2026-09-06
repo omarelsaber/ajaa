@@ -1,0 +1,62 @@
+# ============================================================
+# AJAA — policy.example.yaml
+# Copy to: %APPDATA%\ajaa\policy.yaml
+# ============================================================
+
+# ── SAFETY (engineering guard rail — cannot be exceeded) ────
+safety:
+  # Maximum applications submitted per calendar day, ever.
+  # This is a hard ceiling. Any breach is a BUG, not a limit reached.
+  # You may LOWER this value. You may NOT raise it above 15 without
+  # rebuilding the scheduler — by design.
+  max_applications_per_day: 10
+
+  # Maximum concurrent browser sessions
+  max_browser_concurrency: 2
+
+  # These conditions block auto-submission regardless of any rule below.
+  # This list is a FLOOR — not overridable.
+  never_auto_submit_if:
+    - unanswered_required_questions_exist
+    - any_answer_confidence_below_type_floor
+    - cover_letter_failed_grounding
+    - consent_checkbox_present_without_prior_grant
+    - demographic_question_without_decline_option
+    - sensitive_field_required_but_not_enabled
+    - job_quarantined_for_suspected_injection
+    - calibration_not_completed
+    - connector_trust_period_not_elapsed
+
+# ── OPERATIONAL TARGET (user preference — set AFTER calibration) ─
+# Leave as null until you have completed calibration.
+# Setting a number before calibration has no effect (calibration_not_completed blocks).
+operational:
+  # Daily target. null = approve every application manually.
+  max_applications_per_day: null
+
+  # Minimum match score to auto-queue (set from calibration output).
+  min_match_score: null
+
+  # Browser concurrency within the safety ceiling.
+  browser_concurrency: 1
+
+# ── REVIEW GATE ──────────────────────────────────────────────
+# How many applications a human reviews before auto-submit is permitted.
+# Options: always | first_n_per_connector | above_score_threshold | never
+# v0.1 default: always
+review:
+  default_mode: always
+  # Uncomment after Phase 6 validation:
+  # first_n_per_connector: 20
+
+# ── SENSITIVE FIELDS ─────────────────────────────────────────
+# P2 data is NEVER volunteered. Enable only if you want to answer
+# these fields when a form explicitly asks.
+sensitive_fields:
+  allow_date_of_birth: false
+  allow_nationality: false
+  allow_national_id: false
+  allow_photograph: false
+  allow_disability_status: false
+  allow_ethnicity: false
+  allow_veteran_status: false

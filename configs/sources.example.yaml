@@ -1,0 +1,70 @@
+# ============================================================
+# AJAA — sources.example.yaml
+# Copy to: %APPDATA%\ajaa\sources.yaml
+# ============================================================
+#
+# COMPLIANCE REQUIREMENT:
+# Every source MUST have a compliance block.
+# A source without a compliance block will NOT load at runtime.
+# A stale checked date (> recheck_after_days) triggers a UI warning
+# and eventually disables the source.
+# ============================================================
+
+sources:
+  greenhouse:
+    enabled: true
+    kind: ats_api
+    compliance:
+      basis: "Public job listing API. No authentication required. Terms of service permit reading public listings."
+      checked: "2026-09-06"
+      checked_by: "maintainer"
+      recheck_after_days: 180
+      robots_respected: true
+
+  lever:
+    enabled: true
+    kind: ats_api
+    compliance:
+      basis: "Public job listing API. No authentication required."
+      checked: "2026-09-06"
+      checked_by: "maintainer"
+      recheck_after_days: 180
+      robots_respected: true
+
+  ashby:
+    enabled: true
+    kind: ats_api
+    compliance:
+      basis: "Public job listing API. No authentication required."
+      checked: "2026-09-06"
+      checked_by: "maintainer"
+      recheck_after_days: 180
+      robots_respected: true
+
+  paste_in:
+    enabled: true
+    kind: manual
+    # Manual paste-in: highest value-per-hour feature.
+    # No compliance block required — human operates the source browser.
+    compliance:
+      basis: "Human-operated. The user navigates to the source manually and pastes the URL or text."
+      checked: "2026-09-06"
+      checked_by: "maintainer"
+      recheck_after_days: 9999
+      robots_respected: true
+
+  # ── DISABLED SOURCES ─────────────────────────────────────────
+  # These sources are intentionally disabled.
+  # LinkedIn, Indeed, Wuzzuf, Bayt: NEVER automated. robots.txt verified.
+
+  linkedin:
+    enabled: false
+    kind: manual_only
+    automation_prohibited: true
+    reason: "ToS violation. Account ban risk. Use paste_in for LinkedIn jobs."
+
+  indeed:
+    enabled: false
+    kind: manual_only
+    automation_prohibited: true
+    reason: "robots.txt disallows scraping. Use paste_in."

@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          python-version: "3.12"
+      - run: uv sync --all-extras
+      - name: ruff check
+        run: uv run ruff check src tests
+      - name: ruff format
+        run: uv run ruff format --check src tests
+      - name: mypy
+        run: uv run mypy src/ajaa --strict
+
+  unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          python-version: "3.12"
+      - run: uv sync --all-extras
+      - name: Run unit tests
+        run: uv run pytest tests/unit -q --tb=short
+
+  integration:
+    name: Integration Tests (mocked LLM)
+    runs-on: ubuntu-latest
+    needs: unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          python-version: "3.12"
+      - run: uv sync --all-extras
+      - name: Run integration tests
+        run: uv run pytest tests/integration -q --tb=short -m "not slow"
+
+  adversarial:
+    name: Adversarial Corpus
+    runs-on: ubuntu-latest
+    needs: unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          python-version: "3.12"
+      - run: uv sync --all-extras
+      - name: Run adversarial tests
+        run: uv run pytest tests/adversarial -q --tb=short -m adversarial
+
+  genericity:
+    name: Genericity Suite (4 synthetic candidates)
+    runs-on: ubuntu-latest
+    needs: [unit, integration]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          python-version: "3.12"
+      - run: uv sync --all-extras
+      - name: Run genericity suite
+        run: uv run pytest tests/genericity -q --tb=short -m genericity
