@@ -50,6 +50,7 @@ dependencies = [
     "anyio>=4.4",
     "tenacity>=8.4",
     "cachetools>=5.3",
+    "feedparser>=6.0.14",
 ]
 
 [project.scripts]
