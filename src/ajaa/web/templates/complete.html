@@ -1,0 +1,27 @@
+<div class="card">
+  <div class="complete-icon">✅</div>
+  <div class="complete-title">Profile Complete</div>
+  <div class="complete-sub">
+    All required fields are covered. AJAA is ready to match and apply.
+  </div>
+
+  <div class="stat-row">
+    <div class="stat">
+      <div class="value">{{ progress.covered }}</div>
+      <div class="label">Fields covered</div>
+    </div>
+    <div class="stat">
+      <div class="value">{{ progress.total }}</div>
+      <div class="label">Required total</div>
+    </div>
+    <div class="stat">
+      <div class="value">{{ progress.pct }}%</div>
+      <div class="label">Completion</div>
+    </div>
+  </div>
+
+  <div class="btn-row mt-3" style="justify-content: center;">
+    <a href="/" class="btn btn-primary">Go to Dashboard</a>
+    <a href="/interview" class="btn btn-ghost">Review answers</a>
+  </div>
+</div>

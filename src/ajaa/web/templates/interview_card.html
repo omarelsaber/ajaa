@@ -1,0 +1,97 @@
+{% if complete %}
+  {% include "complete.html" %}
+{% else %}
+<div class="progress-wrap">
+  <div class="progress-label">
+    <span>Profile completion</span>
+    <span>{{ progress.covered }} / {{ progress.total }} required fields</span>
+  </div>
+  <div class="progress-bar">
+    <div class="fill" style="width: {{ progress.pct }}%"></div>
+  </div>
+</div>
+
+<div class="card">
+  {% if error %}
+  <div class="alert alert-error">{{ error }}</div>
+  {% endif %}
+
+  <span class="tier-badge tier-{{ question.tier }}">{{ question.tier }}</span>
+
+  <p class="question-prompt">{{ question.prompt }}</p>
+  {% if question.hint %}
+  <p class="question-hint">{{ question.hint }}</p>
+  {% endif %}
+
+  <form
+    hx-post="/interview/answer"
+    hx-target="#interview-root"
+    hx-swap="innerHTML"
+    hx-indicator="#spinner"
+    autocomplete="off"
+  >
+    <input type="hidden" name="fact_key" value="{{ question.key }}">
+
+    {% if question.type == "select" %}
+    <div class="option-list">
+      {% for opt in question.options %}
+      <label class="option-item">
+        <input type="radio" name="answer" value="{{ opt }}" required> {{ opt }}
+      </label>
+      {% endfor %}
+    </div>
+
+    {% elif question.type == "boolean" %}
+    <div class="option-list">
+      <label class="option-item">
+        <input type="radio" name="answer" value="Yes" required> Yes
+      </label>
+      <label class="option-item">
+        <input type="radio" name="answer" value="No" required> No
+      </label>
+    </div>
+
+    {% elif question.type == "number" %}
+    <input type="number" name="answer" min="0" placeholder="Enter a number" autofocus>
+
+    {% elif question.type == "text" and "url" in question.key %}
+    <input type="url" name="answer" placeholder="https://..." autofocus>
+
+    {% elif question.type == "text" and "summary" in question.key %}
+    <textarea name="answer" placeholder="Write a short professional summary..." autofocus></textarea>
+
+    {% else %}
+    <input type="text" name="answer" placeholder="Your answer..." autofocus>
+    {% endif %}
+
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">
+        Save &amp; continue
+        <span id="spinner" class="htmx-indicator">
+          <span class="spinner"></span>
+        </span>
+      </button>
+      {% if not question.required %}
+      <button
+        type="button"
+        class="btn btn-ghost"
+        hx-post="/interview/skip"
+        hx-vals='{"fact_key": "{{ question.key }}"}'
+        hx-target="#interview-root"
+        hx-swap="innerHTML"
+      >Skip</button>
+      {% endif %}
+      <button
+        type="button"
+        class="btn btn-ghost"
+        style="margin-left: auto; color: var(--danger); border-color: rgba(239,68,68,0.3)"
+        hx-post="/interview/refuse"
+        hx-vals='{"fact_key": "{{ question.key }}"}'
+        hx-target="#interview-root"
+        hx-swap="innerHTML"
+        onclick="return confirm('Mark this field as refused? It will not be used in applications.')"
+      >Refuse</button>
+    </div>
+  </form>
+</div>
+{% endif %}
