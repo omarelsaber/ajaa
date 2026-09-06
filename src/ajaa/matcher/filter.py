@@ -26,6 +26,7 @@ def apply_hard_filters(
     job: dict,
     candidate_id: str,
     company_blacklist: list[str] | None = None,
+    exclude_applied: bool = True,
 ) -> FilterResult:
     """
     Apply hard pre-filters to a job dict.
@@ -33,6 +34,7 @@ def apply_hard_filters(
     job: dict with keys matching Job model columns
     candidate_id: used to check existing applications
     company_blacklist: optional list of company name substrings to reject
+    exclude_applied: if True, filter out jobs already applied to
 
     Returns FilterResult(passed=True) if job should proceed to scoring.
     """
@@ -48,7 +50,7 @@ def apply_hard_filters(
 
     # ── Already applied ───────────────────────────────────────────────────────
     job_id = job.get("id")
-    if job_id and candidate_id:
+    if exclude_applied and job_id and candidate_id:
         already = _has_application(candidate_id, job_id)
         if already:
             return FilterResult(passed=False, reason="already applied")

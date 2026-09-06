@@ -37,6 +37,7 @@ def rank_jobs(
     threshold: int = 50,
     page: int = 1,
     page_size: int = 25,
+    exclude_applied: bool = False,
 ) -> list[RankedJob]:
     """
     Filter, score, and rank a list of job dicts.
@@ -44,6 +45,7 @@ def rank_jobs(
     profile: CanonicalProfile.to_dict()
     jobs: list of dicts from Job model
     threshold: minimum score to include in results (default 50)
+    exclude_applied: whether to exclude jobs already applied to (default False)
 
     Returns paginated list of RankedJob, ordered by score DESC.
     """
@@ -51,7 +53,9 @@ def rank_jobs(
 
     for job in jobs:
         # Hard filter first (cheap)
-        f: FilterResult = apply_hard_filters(job, candidate_id, company_blacklist)
+        f: FilterResult = apply_hard_filters(
+            job, candidate_id, company_blacklist, exclude_applied=exclude_applied
+        )
         if not f.passed:
             continue
 
@@ -103,6 +107,7 @@ def load_and_rank(
     page: int = 1,
     page_size: int = 25,
     source: str | None = None,
+    exclude_applied: bool = False,
 ) -> list[RankedJob]:
     """
     Full pipeline: load jobs from DB -> filter -> score -> rank.
@@ -146,4 +151,5 @@ def load_and_rank(
         threshold=threshold,
         page=page,
         page_size=page_size,
+        exclude_applied=exclude_applied,
     )
