@@ -13,6 +13,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from ajaa.web.routes.interview import router as interview_router
+from ajaa.web.routes.cv import router as cv_router
 
 
 @asynccontextmanager
@@ -41,6 +42,7 @@ _templates_dir = Path(__file__).parent / "templates"
 templates = Jinja2Templates(directory=str(_templates_dir))
 
 app.include_router(interview_router)
+app.include_router(cv_router)
 
 
 @app.get("/", response_class=HTMLResponse)
