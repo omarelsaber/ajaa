@@ -108,21 +108,21 @@ class Fact(Base):
         sa.String(300), nullable=True
     )  # CV ID, application ID, or None
 
-    # Confidence
+    # Confidence — must match types.Confidence enum exactly
     confidence: orm.Mapped[str] = orm.mapped_column(
         sa.String(20),
         sa.CheckConstraint(
-            "confidence IN ('HIGH', 'MEDIUM', 'LOW', 'UNCERTAIN')",
+            "confidence IN ('LOW', 'MEDIUM', 'HIGH', 'CONFIRMED')",
             name="ck_fact_confidence",
         ),
         default="MEDIUM",
     )
 
-    # State
+    # State — must match types.FactState enum exactly
     state: orm.Mapped[str] = orm.mapped_column(
-        sa.String(20),
+        sa.String(30),
         sa.CheckConstraint(
-            "state IN ('KNOWN', 'ASKED', 'SKIPPED', 'STALE')",
+            "state IN ('KNOWN', 'UNKNOWN', 'REFUSED_TO_ANSWER', 'NOT_APPLICABLE')",
             name="ck_fact_state",
         ),
         default="KNOWN",
