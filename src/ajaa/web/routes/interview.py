@@ -19,7 +19,6 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from ajaa.db.repositories.candidate import NoCandidateError
 from ajaa.interview.corpus import get_corpus
 from ajaa.interview.session import InterviewSession
 
@@ -37,9 +36,13 @@ def _get_corpus():
     return get_corpus(_QUESTIONS_DIR)
 
 
-def _get_candidate_id() -> str:
+def _get_or_create_candidate_id() -> str:
+    """Return existing candidate ID, or create one on first visit."""
     from ajaa.db.repositories import candidate as candidate_repo
-    return candidate_repo.get().id
+    ctx = candidate_repo.get_or_none()
+    if ctx is None:
+        ctx = candidate_repo.create(display_name="Me")
+    return ctx.id
 
 
 def _progress(session: InterviewSession) -> dict:
@@ -52,16 +55,7 @@ def _progress(session: InterviewSession) -> dict:
 
 @router.get("/interview", response_class=HTMLResponse)
 async def interview_page(request: Request):
-    try:
-        candidate_id = _get_candidate_id()
-    except NoCandidateError:
-        return templates.TemplateResponse(request, "interview.html", {
-            "complete": False,
-            "question": None,
-            "progress": {"covered": 0, "total": 0, "pct": 0},
-            "error": "No profile found. Run 'ajaa init' in your terminal first.",
-        })
-
+    candidate_id = _get_or_create_candidate_id()
     session = InterviewSession.start(candidate_id, _get_corpus())
     progress = _progress(session)
     question = session.next_question()
@@ -82,7 +76,7 @@ async def submit_answer(
     fact_key: Annotated[str, Form()],
     answer: Annotated[str, Form()] = "",
 ):
-    candidate_id = _get_candidate_id()
+    candidate_id = _get_or_create_candidate_id()
     session = InterviewSession.start(candidate_id, _get_corpus())
 
     result = session.submit_answer(fact_key, answer)
@@ -114,7 +108,7 @@ async def skip_question(
     request: Request,
     fact_key: Annotated[str, Form()],
 ):
-    candidate_id = _get_candidate_id()
+    candidate_id = _get_or_create_candidate_id()
     session = InterviewSession.start(candidate_id, _get_corpus())
     session.submit_answer(fact_key, "", skip=True)
 
@@ -136,7 +130,7 @@ async def refuse_question(
     request: Request,
     fact_key: Annotated[str, Form()],
 ):
-    candidate_id = _get_candidate_id()
+    candidate_id = _get_or_create_candidate_id()
     session = InterviewSession.start(candidate_id, _get_corpus())
     session.submit_answer(fact_key, "", refuse=True)
 

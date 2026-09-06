@@ -3,7 +3,7 @@
 
 {% block content %}
 <h1 style="font-size:1.6rem; font-weight:700; margin-bottom:0.4rem;">
-  Welcome{% if candidate %}, {{ candidate.display_name }}{% endif %}
+  Welcome{% if candidate and candidate.display_name != "Me" %}, {{ candidate.display_name }}{% endif %}
 </h1>
 <p class="text-muted text-sm" style="margin-bottom:2rem;">
   Autonomous Job Application Agent &mdash; v0.1 alpha
@@ -27,14 +27,14 @@
   </div>
 </div>
 
-{% if not candidate %}
-<div class="alert alert-info">
-  No profile found. Run <code>ajaa init</code> in your terminal to get started.
-</div>
-{% elif stats.profile_pct < 100 %}
+{% if stats.profile_pct < 100 %}
 <div class="alert alert-info">
   Your profile is {{ stats.profile_pct }}% complete.
-  <a href="/interview" style="color:var(--accent);">Answer remaining questions &rarr;</a>
+  <a href="/interview" style="color:var(--accent); font-weight:600;">Complete your profile &rarr;</a>
+</div>
+{% else %}
+<div class="alert alert-success">
+  &#10003; Profile complete — AJAA is ready to match and apply.
 </div>
 {% endif %}
 {% endblock %}

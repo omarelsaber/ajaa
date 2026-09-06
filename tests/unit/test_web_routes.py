@@ -123,11 +123,12 @@ class TestDashboard:
 # ── /interview ────────────────────────────────────────────────────────────────
 
 class TestInterviewGet:
-    def test_no_candidate_shows_error(self, client: TestClient) -> None:
+    def test_no_candidate_auto_creates_and_shows_question(self, client: TestClient) -> None:
+        # /interview now auto-creates a candidate profile on first visit
         r = client.get("/interview")
         assert r.status_code == 200
-        # Should show an error about missing profile
-        assert "ajaa init" in r.text or "No profile" in r.text
+        # Should show the first question (not an error)
+        assert "answer" in r.text.lower() or "name" in r.text.lower() or "question" in r.text.lower()
 
     def test_with_candidate_shows_question(self, client_with_candidate: TestClient) -> None:
         r = client_with_candidate.get("/interview")

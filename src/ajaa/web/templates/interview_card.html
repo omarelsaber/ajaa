@@ -1,5 +1,7 @@
 {% if complete %}
   {% include "complete.html" %}
+{% elif question is none %}
+  {# No question and not complete — edge case, show nothing #}
 {% else %}
 <div class="progress-wrap">
   <div class="progress-label">
