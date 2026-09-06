@@ -37,7 +37,7 @@ tiers:
     max_tokens: 4096
     temperature: 0.0
   mid:
-    model: "claude-opus-4-5"
+    model: "claude-opus-4-8"
     provider: agent_router
     max_tokens: 8192
     temperature: 0.0
@@ -58,7 +58,7 @@ pricing:
   deepseek-v4-flash:
     input: 0.14
     output: 0.28
-  claude-opus-4-5:
+  claude-opus-4-8:
     input: 3.00
     output: 15.00
   claude-opus-5:

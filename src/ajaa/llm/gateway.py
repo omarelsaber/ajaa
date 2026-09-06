@@ -67,14 +67,14 @@ class ProviderConfig:
 
     # Tier → model
     cheap_model: str = "deepseek-v4-flash"
-    mid_model: str = "claude-opus-4-5"
+    mid_model: str = "claude-opus-4-8"
     strong_model: str = "claude-opus-5"
     vision_model: str = "claude-opus-5"
 
     # Pricing (USD per 1M tokens)
     pricing: dict[str, dict[str, float]] = field(default_factory=lambda: {
         "deepseek-v4-flash": {"input": 0.14, "output": 0.28},
-        "claude-opus-4-5":   {"input": 3.00, "output": 15.00},
+        "claude-opus-4-8":   {"input": 3.00, "output": 15.00},
         "claude-opus-5":     {"input": 15.00, "output": 75.00},
     })
 
