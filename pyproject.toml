@@ -15,47 +15,35 @@ dependencies = [
     "python-multipart>=0.0.9",
     "httpx[http2]>=0.27",
     "itsdangerous>=2.2",
-
     # Database
     "sqlalchemy>=2.0",
     "alembic>=1.13",
     "aiosqlite>=0.20",
-
     # Config & validation
     "pydantic>=2.7",
     "pydantic-settings>=2.3",
     "pyyaml>=6.0",
-
     # CLI
     "typer>=0.12",
     "rich>=13.7",
-
     # Secrets
     "keyring>=25.0",
-
     # Logging
     "structlog>=24.2",
-
     # Browser automation
     "playwright>=1.45",
-
     # CV parsing
     "pymupdf>=1.24",
     "python-docx>=1.1",
-
     # LLM / Embeddings (gateway only; models chosen at config time)
     "openai>=1.40",
     "tiktoken>=0.7",
-
     # Embeddings (local, CPU)
     "fastembed>=0.3",
-
     # Scheduling
     "apscheduler>=3.10",
-
     # Email
     "aiosmtplib>=3.0",
-
     # Utilities
     "python-dateutil>=2.9",
     "babel>=2.15",

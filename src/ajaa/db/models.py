@@ -176,9 +176,20 @@ class CV(Base):
     )
 
     filename: orm.Mapped[str] = orm.mapped_column(sa.String(500), info={"pii": True})
+    label: orm.Mapped[Optional[str]] = orm.mapped_column(
+        sa.String(200), nullable=True
+    )  # User-facing label, e.g. "My CV 2025"
+    file_path: orm.Mapped[Optional[str]] = orm.mapped_column(
+        sa.String(1000), nullable=True
+    )  # Absolute path to saved PDF on disk
     content_hash: orm.Mapped[str] = orm.mapped_column(
-        sa.String(64), index=True, unique=True
+        sa.String(64), index=True
     )  # SHA-256 hex. Same hash = same file = cache hit.
+
+    # Extracted text (stored for re-extraction without re-upload)
+    raw_text: orm.Mapped[Optional[str]] = orm.mapped_column(sa.Text, nullable=True)
+    page_count: orm.Mapped[int] = orm.mapped_column(sa.Integer, default=0)
+    char_count: orm.Mapped[int] = orm.mapped_column(sa.Integer, default=0)
 
     extraction_status: orm.Mapped[str] = orm.mapped_column(
         sa.String(20),
@@ -199,6 +210,18 @@ class CV(Base):
     )
     extracted_at: orm.Mapped[Optional[datetime]] = orm.mapped_column(
         sa.DateTime, nullable=True
+    )
+    created_at: orm.Mapped[datetime] = orm.mapped_column(
+        sa.DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: orm.Mapped[datetime] = orm.mapped_column(
+        sa.DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+    __table_args__ = (
+        sa.UniqueConstraint("candidate_id", "content_hash", name="uq_cv_candidate_hash"),
     )
 
     candidate: orm.Mapped["CandidateContext"] = orm.relationship(
@@ -225,9 +248,14 @@ class ExtractionCache(Base):
         sa.String(36), sa.ForeignKey("cvs.id", ondelete="CASCADE"), index=True
     )
     content_hash: orm.Mapped[str] = orm.mapped_column(sa.String(64), index=True)
-    extractor_version: orm.Mapped[int] = orm.mapped_column(sa.Integer, default=1)
-    extracted_facts_json: orm.Mapped[str] = orm.mapped_column(sa.Text)
+    extractor_version: orm.Mapped[str] = orm.mapped_column(
+        sa.String(20), default="v1.0"
+    )  # String like "v1.0" — bump to invalidate old cache entries
+    extracted_json: orm.Mapped[str] = orm.mapped_column(sa.Text)  # JSON array of facts
     created_at: orm.Mapped[datetime] = orm.mapped_column(
+        sa.DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, default=lambda: datetime.now(timezone.utc)
     )
 
