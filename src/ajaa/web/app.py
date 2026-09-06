@@ -5,6 +5,7 @@ FastAPI application — Starlette 1.6+ TemplateResponse(request, name, context)
 """
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -13,7 +14,28 @@ from fastapi.templating import Jinja2Templates
 
 from ajaa.web.routes.interview import router as interview_router
 
-app = FastAPI(title="AJAA", version="0.1.0", docs_url=None, redoc_url=None)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize DB engine on startup. Shutdown: dispose engine."""
+    from ajaa.config import get_settings
+    from ajaa.db.session import init_engine, reset_engine
+
+    settings = get_settings()
+    db_path = settings.data_dir / "db" / "ajaa.db"
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    init_engine(db_path)
+    yield
+    reset_engine()
+
+
+app = FastAPI(
+    title="AJAA",
+    version="0.1.0",
+    docs_url=None,
+    redoc_url=None,
+    lifespan=lifespan,
+)
 
 _templates_dir = Path(__file__).parent / "templates"
 templates = Jinja2Templates(directory=str(_templates_dir))
