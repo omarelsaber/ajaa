@@ -41,15 +41,32 @@ class RemoteOKScraper(ScraperBase):
     def scrape(self, query: SearchQuery) -> list[RawJob]:
         results: list[RawJob] = []
 
-        for keyword in query.keywords[:3]:  # Max 3 API calls per query
+        # RemoteOK uses single-word tags (e.g. 'ai', 'engineer', 'python', 'dev')
+        tags_to_try: list[str] = []
+        for kw in query.keywords:
+            clean = kw.lower().strip()
+            if not clean:
+                continue
+            words = [w for w in clean.split() if len(w) > 1]
+            for w in words:
+                if w not in tags_to_try:
+                    tags_to_try.append(w)
+            hyphenated = clean.replace(" ", "-")
+            if hyphenated not in tags_to_try:
+                tags_to_try.append(hyphenated)
+
+        if not tags_to_try:
+            tags_to_try = ["ai", "dev", "engineer", "python"]
+
+        for tag in tags_to_try[:4]:  # Max 4 tag calls per query
             try:
-                jobs = self._fetch(keyword.lower().replace(" ", "-"))
+                jobs = self._fetch(tag)
                 results.extend(jobs)
                 if len(results) >= query.max_results:
                     break
                 time.sleep(self.RATE_LIMIT_DELAY)
             except Exception as exc:
-                log.warning("RemoteOK fetch failed for %r: %s", keyword, exc)
+                log.warning("RemoteOK fetch failed for %r: %s", tag, exc)
 
         # Dedup by apply_url within this scrape run
         seen: set[str] = set()

@@ -58,9 +58,39 @@ def init_engine(db_path: Path) -> sa.Engine:
     # Create tables if they don't exist
     Base.metadata.create_all(_engine)
 
+    # Automatically synchronize any new columns added to models (SQLite auto-migration)
+    _auto_sync_columns(_engine)
+
     _SessionFactory = orm.sessionmaker(bind=_engine, expire_on_commit=False)
 
     return _engine
+
+
+def _auto_sync_columns(engine: sa.Engine) -> None:
+    """Safely adds any missing columns from models to SQLite tables."""
+    try:
+        with engine.begin() as conn:
+            cursor = conn.connection.cursor()
+            for table_name, table in Base.metadata.tables.items():
+                cursor.execute(f"PRAGMA table_info({table_name})")
+                existing_cols = {row[1] for row in cursor.fetchall()}
+                for col in table.columns:
+                    if col.name not in existing_cols:
+                        col_type = col.type.compile(engine.dialect)
+                        default_clause = ""
+                        if col.name in ("page_count", "char_count", "retry_count"):
+                            default_clause = " DEFAULT 0"
+                        elif col.name in ("extracted_json", "safety_block_reasons"):
+                            default_clause = " DEFAULT '[]'"
+                        elif col.name in ("created_at", "updated_at", "discovered_at"):
+                            default_clause = " DEFAULT CURRENT_TIMESTAMP"
+                        elif col.name in ("is_active", "is_stale", "remote_ok"):
+                            default_clause = " DEFAULT 0"
+
+                        sql = f"ALTER TABLE {table_name} ADD COLUMN {col.name} {col_type}{default_clause}"
+                        cursor.execute(sql)
+    except Exception:
+        pass
 
 
 def get_engine() -> sa.Engine:
