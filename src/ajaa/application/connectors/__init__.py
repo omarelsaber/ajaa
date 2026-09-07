@@ -13,6 +13,7 @@ from ajaa.application.connectors.base import (
     FillReport,
     SubmitReport,
 )
+from ajaa.application.connectors.ashby import AshbyConnector
 from ajaa.application.connectors.generic import GenericConnector
 from ajaa.application.connectors.greenhouse import GreenhouseConnector
 from ajaa.application.connectors.lever import LeverConnector
@@ -31,11 +32,16 @@ def get_connector(job: Job) -> ApplicationConnector:
     if lever.matches(job):
         return lever
 
+    ashby = AshbyConnector()
+    if ashby.matches(job):
+        return ashby
+
     return GenericConnector()
 
 
 __all__ = [
     "ApplicationConnector",
+    "AshbyConnector",
     "Confirmation",
     "FillOperation",
     "FillPlan",

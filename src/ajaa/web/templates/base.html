@@ -273,6 +273,17 @@
     <a class="nav-link" href="/jobs">Jobs</a>
     <a class="nav-link" href="/applications">Applications</a>
     <a class="nav-link" href="/status">Status</a>
+    <div style="display:flex; align-items:center; gap:0.35rem; margin-left:0.5rem; border-left:1px solid var(--border); padding-left:0.6rem;">
+      <form method="post" action="/control/pause" style="display:inline; margin:0;">
+        <button type="submit" title="Pause automation" style="background:var(--surface); border:1px solid var(--border); color:var(--text-dim); padding:0.2rem 0.45rem; border-radius:6px; cursor:pointer; font-size:0.75rem;">⏸ Pause</button>
+      </form>
+      <form method="post" action="/control/resume" style="display:inline; margin:0;">
+        <button type="submit" title="Resume automation" style="background:var(--surface); border:1px solid var(--border); color:var(--success); padding:0.2rem 0.45rem; border-radius:6px; cursor:pointer; font-size:0.75rem;">▶ Resume</button>
+      </form>
+      <form method="post" action="/control/panic" onsubmit="return confirm('EMERGENCY PANIC: Immediately terminate all browser sessions?');" style="display:inline; margin:0;">
+        <button type="submit" title="Emergency Panic Kill Switch (PRD §26.5)" style="background:rgba(239,68,68,0.15); border:1px solid var(--danger); color:var(--danger); padding:0.2rem 0.45rem; border-radius:6px; cursor:pointer; font-size:0.75rem; font-weight:700;">🚨 Panic</button>
+      </form>
+    </div>
   </div>
 </nav>
 <main>

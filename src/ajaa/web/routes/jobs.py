@@ -26,6 +26,7 @@ from ajaa.scraper.paste import PasteJobInput, ingest_pasted_job
 from ajaa.scraper.remoteok import RemoteOKScraper
 from ajaa.scraper.greenhouse import GreenhouseScraper
 from ajaa.scraper.lever import LeverScraper
+from ajaa.scraper.ashby import AshbyScraper
 
 router = APIRouter()
 
@@ -135,6 +136,12 @@ async def scrape_jobs(
     if source in ("lever", "all"):
         try:
             raw_jobs.extend(LeverScraper().scrape(query))
+        except Exception:
+            pass
+
+    if source in ("ashby", "all"):
+        try:
+            raw_jobs.extend(AshbyScraper().scrape(query))
         except Exception:
             pass
 

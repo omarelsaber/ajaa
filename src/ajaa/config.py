@@ -341,3 +341,11 @@ def reload_settings() -> Settings:
     """Invalidate cache and reload. Use in tests and after ajaa init."""
     get_settings.cache_clear()
     return get_settings()
+
+
+def get_user_data_dir() -> Path:
+    """Return the active user data directory outside the repo."""
+    try:
+        return get_settings().data_dir
+    except Exception:
+        return _default_data_dir()

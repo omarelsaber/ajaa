@@ -68,6 +68,9 @@ class CandidateContext(Base):
     applications: orm.Mapped[list["Application"]] = orm.relationship(
         "Application", back_populates="candidate", cascade="all, delete-orphan"
     )
+    cover_letters: orm.Mapped[list["CoverLetter"]] = orm.relationship(
+        "CoverLetter", back_populates="candidate", cascade="all, delete-orphan"
+    )
 
 
 # ── fact_ledger ───────────────────────────────────────────────────────────────
@@ -417,6 +420,9 @@ class Application(Base):
         "ApplicationStep", back_populates="application", cascade="all, delete-orphan",
         order_by="ApplicationStep.step_index",
     )
+    cover_letter: orm.Mapped[Optional["CoverLetter"]] = orm.relationship(
+        "CoverLetter", back_populates="application", uselist=False, cascade="all, delete-orphan"
+    )
 
 
 # ── application_step ──────────────────────────────────────────────────────────
@@ -543,4 +549,52 @@ class LLMCallLog(Base):
     error: orm.Mapped[Optional[str]] = orm.mapped_column(sa.Text, nullable=True)
     occurred_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, default=lambda: datetime.now(timezone.utc), index=True
+    )
+
+
+# ── cover_letters ─────────────────────────────────────────────────────────────
+
+class CoverLetter(Base):
+    """
+    Persisted cover letter generated for an application or candidate (PRD §14).
+    Enforces Invariant I1: grounded_fact_ids records every fact cited.
+    Tracks manual user edits for candidate voice adaptation (PRD §14.4).
+    """
+    __tablename__ = "cover_letters"
+
+    id: orm.Mapped[str] = orm.mapped_column(
+        sa.String(36), primary_key=True, default=_new_uuid
+    )
+    application_id: orm.Mapped[Optional[str]] = orm.mapped_column(
+        sa.String(36), sa.ForeignKey("applications.id", ondelete="CASCADE"), nullable=True, index=True
+    )
+    candidate_id: orm.Mapped[str] = orm.mapped_column(
+        sa.String(36), sa.ForeignKey("candidate_context.id", ondelete="CASCADE"), index=True
+    )
+    job_id: orm.Mapped[Optional[str]] = orm.mapped_column(
+        sa.String(36), sa.ForeignKey("jobs.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+
+    opening_text: orm.Mapped[str] = orm.mapped_column(sa.Text, default="")
+    fit_paragraph: orm.Mapped[str] = orm.mapped_column(sa.Text, default="")
+    evidence_blurbs: orm.Mapped[str] = orm.mapped_column(sa.Text, default="")
+    closing_text: orm.Mapped[str] = orm.mapped_column(sa.Text, default="")
+    full_text: orm.Mapped[str] = orm.mapped_column(sa.Text, default="")
+
+    grounded_fact_ids: orm.Mapped[str] = orm.mapped_column(sa.Text, default="[]")
+    was_edited: orm.Mapped[bool] = orm.mapped_column(sa.Boolean, default=False)
+    edited_text: orm.Mapped[Optional[str]] = orm.mapped_column(sa.Text, nullable=True)
+
+    created_at: orm.Mapped[datetime] = orm.mapped_column(
+        sa.DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: orm.Mapped[datetime] = orm.mapped_column(
+        sa.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
+    )
+
+    candidate: orm.Mapped["CandidateContext"] = orm.relationship(
+        "CandidateContext", back_populates="cover_letters"
+    )
+    application: orm.Mapped[Optional["Application"]] = orm.relationship(
+        "Application", back_populates="cover_letter"
     )

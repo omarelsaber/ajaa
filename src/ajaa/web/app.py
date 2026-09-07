@@ -17,6 +17,7 @@ from ajaa.web.routes.cv import router as cv_router
 from ajaa.web.routes.jobs import router as jobs_router
 from ajaa.web.routes.applications import router as applications_router
 from ajaa.web.routes.calibration import router as calibration_router
+from ajaa.web.routes.control import router as control_router
 
 
 @asynccontextmanager
@@ -49,6 +50,7 @@ app.include_router(cv_router)
 app.include_router(jobs_router)
 app.include_router(applications_router)
 app.include_router(calibration_router)
+app.include_router(control_router)
 
 
 @app.get("/", response_class=HTMLResponse)

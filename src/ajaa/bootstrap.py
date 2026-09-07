@@ -14,7 +14,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from ajaa.config import _default_config_dir, _default_data_dir, _find_repo_root
+from ajaa.config import _default_config_dir, _default_data_dir, _find_repo_root, get_user_data_dir
 
 
 @dataclass
