@@ -30,12 +30,13 @@ class GreenhouseScraper(ScraperBase):
         self.board_tokens = board_tokens or [
             "cloudflare",
             "elastic",
-            "automattic",
             "canonical",
             "figma",
             "stripe",
-            "reddit",
             "datadog",
+            "discord",
+            "gusto",
+            "reddit",
         ]
 
     def scrape(self, query: SearchQuery) -> list[RawJob]:

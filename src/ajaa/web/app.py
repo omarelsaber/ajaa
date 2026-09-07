@@ -119,6 +119,15 @@ async def dashboard(request: Request):
     })
 
 
+@app.get("/status", response_class=HTMLResponse)
+async def system_status(request: Request):
+    from ajaa.bootstrap import run_checks
+    result = run_checks()
+    return templates.TemplateResponse(request, "status.html", {
+        "result": result,
+    })
+
+
 @app.get("/health")
 async def health():
     from ajaa.bootstrap import run_checks

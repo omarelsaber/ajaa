@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}System Status &amp; Safety — AJAA{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+  <div>
+    <h1 style="font-size:1.4rem; font-weight:700; margin-bottom:0.25rem;">System Status &amp; Safety Ceilings</h1>
+    <p class="text-muted text-sm">PRD §26 / §40: Local runtime health, safety limits, and diagnostics.</p>
+  </div>
+  <div>
+    <span style="font-size:0.8rem; font-weight:700; padding:0.25rem 0.75rem; border-radius:999px;
+      {% if result.all_passed %}background:rgba(34,197,94,0.15); color:#22c55e;
+      {% else %}background:rgba(234,179,8,0.15); color:#eab308;{% endif %}">
+      {% if result.all_passed %}ALL CHECKS PASSED{% else %}DEGRADED MODE{% endif %}
+    </span>
+  </div>
+</div>
+
+<!-- Safety Ceilings Card (PRD §26.1) -->
+<div class="card" style="margin-bottom:1.5rem; border-left:4px solid #6366f1;">
+  <h2 style="font-size:1rem; font-weight:700; margin-bottom:0.5rem;">
+    &#128737; The Two Numbers That Must Never Be Confused (PRD §26.1)
+  </h2>
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:1rem; margin-top:0.75rem;">
+    <div style="background:var(--surface-2); padding:0.75rem 1rem; border-radius:8px;">
+      <div style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase; font-weight:700;">
+        Safety Ceiling (Hard Barrier)
+      </div>
+      <div style="font-size:1.3rem; font-weight:700; color:var(--fg); margin:0.25rem 0;">
+        15 applications / day
+      </div>
+      <div style="font-size:0.75rem; color:var(--fg-muted);">
+        Engineering guard rail. Prevents runaway execution. Cannot be raised by config.
+      </div>
+    </div>
+
+    <div style="background:var(--surface-2); padding:0.75rem 1rem; border-radius:8px;">
+      <div style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase; font-weight:700;">
+        Human Review Gate
+      </div>
+      <div style="font-size:1.3rem; font-weight:700; color:#22c55e; margin:0.25rem 0;">
+        MANDATORY (v0.1)
+      </div>
+      <div style="font-size:0.75rem; color:var(--fg-muted);">
+        Every single application requires manual user approval before submission.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Diagnostics Checks -->
+<div class="card" style="margin-bottom:1.5rem;">
+  <h2 style="font-size:1rem; font-weight:700; margin-bottom:1rem;">Bootstrap Diagnostic Checks</h2>
+  <div style="display:flex; flex-direction:column; gap:0.6rem;">
+    {% for c in result.checks %}
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0.75rem; background:var(--surface-2); border-radius:6px;">
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <span style="font-weight:700; color:{% if c.passed %}#22c55e{% else %}#ef4444{% endif %};">
+          {% if c.passed %}&#10003;{% else %}&#10007;{% endif %}
+        </span>
+        <span style="font-size:0.85rem; font-weight:600;">{{ c.name }}</span>
+      </div>
+      <span class="text-muted text-sm" style="font-size:0.8rem;">{{ c.message }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Active Source Connectors -->
+<div class="card">
+  <h2 style="font-size:1rem; font-weight:700; margin-bottom:0.75rem;">Active ATS Connectors &amp; Sources</h2>
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:0.75rem;">
+    <div style="background:var(--surface-2); padding:0.6rem 0.75rem; border-radius:6px;">
+      <div style="font-weight:700; font-size:0.85rem; color:var(--accent);">Greenhouse API</div>
+      <div style="font-size:0.75rem; color:var(--fg-muted);">Cloudflare, Elastic, Figma, Discord...</div>
+      <div style="font-size:0.75rem; color:#22c55e; margin-top:0.25rem;">Active &bull; Public JSON</div>
+    </div>
+    <div style="background:var(--surface-2); padding:0.6rem 0.75rem; border-radius:6px;">
+      <div style="font-weight:700; font-size:0.85rem; color:var(--accent);">Lever Postings API</div>
+      <div style="font-size:0.75rem; color:var(--fg-muted);">Spotify, Palantir</div>
+      <div style="font-size:0.75rem; color:#22c55e; margin-top:0.25rem;">Active &bull; Public JSON</div>
+    </div>
+    <div style="background:var(--surface-2); padding:0.6rem 0.75rem; border-radius:6px;">
+      <div style="font-weight:700; font-size:0.85rem; color:var(--accent);">RemoteOK</div>
+      <div style="font-size:0.75rem; color:var(--fg-muted);">Global Remote Aggregator</div>
+      <div style="font-size:0.75rem; color:#22c55e; margin-top:0.25rem;">Active &bull; Live Feed</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

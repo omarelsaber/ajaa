@@ -29,8 +29,6 @@ class LeverScraper(ScraperBase):
         self.sites = sites or [
             "spotify",
             "palantir",
-            "deliveroo",
-            "brex",
         ]
 
     def scrape(self, query: SearchQuery) -> list[RawJob]:
