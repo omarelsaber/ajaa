@@ -84,10 +84,19 @@ class TestStateMachine:
         submit_application(app_id, confirmation_url="https://company.example.com/thanks")
         with get_session() as session:
             import sqlalchemy as sa
+            from ajaa.db.models import AuditEvent
             app = session.execute(sa.select(Application).where(Application.id == app_id)).scalars().first()
             assert app.state == ApplicationState.SUBMITTED.value
             assert app.submitted_at is not None
             assert app.confirmation_url == "https://company.example.com/thanks"
+
+            events = session.execute(
+                sa.select(AuditEvent).where(AuditEvent.application_id == app_id).order_by(AuditEvent.occurred_at.asc())
+            ).scalars().all()
+            assert len(events) == 3
+            assert events[0].event_type == "PREPARATION_COMPLETE"
+            assert events[1].event_type == "REVIEW_APPROVAL"
+            assert events[2].event_type == "SUBMISSION_CONFIRMED"
 
     def test_stale_job_blocks_preparation(self, candidate_with_facts: str, test_job: str):
         # Mark job as stale

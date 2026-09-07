@@ -23,7 +23,7 @@ from typing import Any
 
 from ajaa.answering.resolver import AnswerResolution, FormField, ResolutionStatus, resolve_field
 from ajaa.candidate.profile import build_profile
-from ajaa.db.models import Application, ApplicationAnswer, Job
+from ajaa.db.models import Application, ApplicationAnswer, AuditEvent, Job
 from ajaa.db.session import get_session
 import sqlalchemy as sa
 
@@ -145,6 +145,16 @@ def prepare_application(
                 )
                 session.add(ans)
 
+            # Record audit event
+            _record_audit_event(
+                session=session,
+                application_id=application_id,
+                event_type="PREPARATION_COMPLETE",
+                from_state="PREPARING",
+                to_state=next_state.value,
+                detail={"resolved_count": resolved_count, "needs_user_count": needs_user_count},
+            )
+
             session.commit()
 
     return PreparationResult(
@@ -165,11 +175,21 @@ def approve_application(application_id: str, notes: str = "") -> None:
         if app is None:
             raise ValueError(f"Application {application_id} not found")
 
-        app.previous_state = app.state
+        old_state = app.state
+        app.previous_state = old_state
         app.review_decision = "APPROVED"
         app.review_notes = notes
         app.reviewed_at = datetime.now(timezone.utc)
         app.state = ApplicationState.APPROVED.value
+
+        _record_audit_event(
+            session=session,
+            application_id=application_id,
+            event_type="REVIEW_APPROVAL",
+            from_state=old_state,
+            to_state=ApplicationState.APPROVED.value,
+            detail={"notes": notes},
+        )
         session.commit()
 
 
@@ -182,8 +202,38 @@ def submit_application(application_id: str, confirmation_url: str = "") -> None:
         if app is None:
             raise ValueError(f"Application {application_id} not found")
 
-        app.previous_state = app.state
+        old_state = app.state
+        app.previous_state = old_state
         app.state = ApplicationState.SUBMITTED.value
         app.submitted_at = datetime.now(timezone.utc)
         app.confirmation_url = confirmation_url or "https://ats.example.com/confirmed"
+
+        _record_audit_event(
+            session=session,
+            application_id=application_id,
+            event_type="SUBMISSION_CONFIRMED",
+            from_state=old_state,
+            to_state=ApplicationState.SUBMITTED.value,
+            detail={"confirmation_url": app.confirmation_url},
+        )
         session.commit()
+
+
+def _record_audit_event(
+    session,
+    application_id: str,
+    event_type: str,
+    from_state: str | None,
+    to_state: str,
+    detail: dict[str, Any] | None = None,
+) -> None:
+    """Append-only immutable audit record."""
+    event = AuditEvent(
+        application_id=application_id,
+        event_type=event_type,
+        from_state=from_state,
+        to_state=to_state,
+        detail_json=json.dumps(detail) if detail else None,
+        occurred_at=datetime.now(timezone.utc),
+    )
+    session.add(event)
