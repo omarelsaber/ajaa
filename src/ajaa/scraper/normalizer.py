@@ -12,6 +12,7 @@ Responsibilities:
 from __future__ import annotations
 
 import hashlib
+import html
 import logging
 import re
 from dataclasses import dataclass
@@ -114,18 +115,23 @@ def ingest_job(raw: RawJob) -> NormalizeResult:
             except Exception:
                 pass
 
+        title_clean = html.unescape(raw.title).strip() if raw.title else ""
+        company_clean = html.unescape(raw.company).strip() if raw.company else ""
+        location_clean = html.unescape(raw.location).strip() if raw.location else ""
+        desc_clean = html.unescape(raw.description).strip() if raw.description else None
+
         job = Job(
             url_hash=uhash,
             apply_url=raw.apply_url,
             source_connector=raw.source,
-            title=raw.title[:500] if raw.title else "",
-            company=raw.company[:200] if raw.company else "",
-            location=raw.location[:200] if raw.location else "",
+            title=title_clean[:500],
+            company=company_clean[:200],
+            location=location_clean[:200],
             remote_ok=raw.remote,
-            jd_text=raw.description[:50_000] if raw.description else None,
+            jd_text=desc_clean[:50_000] if desc_clean else None,
             jd_content_hash=hashlib.sha256(
-                (raw.description or "").encode()
-            ).hexdigest() if raw.description else None,
+                desc_clean.encode()
+            ).hexdigest() if desc_clean else None,
             jd_scraped_at=jd_scraped_at or now,
             discovered_at=now,
             is_stale=False,
