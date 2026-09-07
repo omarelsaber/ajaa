@@ -1,0 +1,13 @@
+{
+  "id": "job-a-location-fail",
+  "title": "Staff Python Engineer (On-Site Only)",
+  "company": "SecureDefense Labs",
+  "location": "Washington, DC (On-site required)",
+  "remote_ok": false,
+  "min_salary": 150000,
+  "required_skills": [
+    "Python",
+    "PostgreSQL"
+  ],
+  "required_credentials": []
+}

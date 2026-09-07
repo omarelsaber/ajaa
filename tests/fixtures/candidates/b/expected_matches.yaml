@@ -1,0 +1,6 @@
+ranking_order:
+- job-b-strong
+- job-b-ambiguous
+- job-b-weak
+gate_failures:
+  job-b-location-fail: location_mismatch

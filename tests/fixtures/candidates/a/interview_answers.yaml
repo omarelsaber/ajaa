@@ -1,0 +1,3 @@
+preferences.work_mode: remote
+compensation.minimum_base: '120000'
+authorization.requires_sponsorship: 'False'

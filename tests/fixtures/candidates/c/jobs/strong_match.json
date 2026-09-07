@@ -1,0 +1,16 @@
+{
+  "id": "job-c-strong",
+  "title": "Mechanical Design Engineer",
+  "company": "Precision Auto Tech",
+  "location": "Nagoya (On-site)",
+  "remote_ok": false,
+  "min_salary": 480000,
+  "required_skills": [
+    "SolidWorks",
+    "GD&T",
+    "Finite Element Analysis"
+  ],
+  "required_credentials": [
+    "PE_LICENSE_EIT"
+  ]
+}

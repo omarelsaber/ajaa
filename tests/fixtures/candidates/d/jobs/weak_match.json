@@ -1,0 +1,13 @@
+{
+  "id": "job-d-weak",
+  "title": "Hospital Receptionist & Scheduler",
+  "company": "Clinic Network",
+  "location": "Los Angeles, CA (On-site)",
+  "remote_ok": false,
+  "min_salary": 22,
+  "required_skills": [
+    "Customer Service",
+    "Phone Scheduling"
+  ],
+  "required_credentials": []
+}

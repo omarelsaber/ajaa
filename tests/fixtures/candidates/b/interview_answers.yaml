@@ -1,0 +1,3 @@
+preferences.work_mode: hybrid
+compensation.minimum_base: '75000'
+authorization.work_eligible: 'True'

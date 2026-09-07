@@ -1,0 +1,13 @@
+{
+  "id": "job-c-ambiguous",
+  "title": "CAD Drafter & Modeler",
+  "company": "Manufacturing Partners",
+  "location": "Nagoya (On-site)",
+  "remote_ok": false,
+  "min_salary": 420000,
+  "required_skills": [
+    "AutoCAD",
+    "SolidWorks"
+  ],
+  "required_credentials": []
+}

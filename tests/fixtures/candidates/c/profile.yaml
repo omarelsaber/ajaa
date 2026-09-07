@@ -1,0 +1,19 @@
+full_name: Kenji Takahashi (Synthetic)
+email: kenji.synthetic@test-candidate-c.jp
+phone: +81-3-5555-0303
+location: Nagoya, Japan
+work_mode: onsite
+title: Mechanical Engineer
+seniority: early_career
+skills:
+- SolidWorks
+- AutoCAD
+- GD&T
+- Finite Element Analysis
+- ASME standards
+education: BS Mechanical Engineering (84% marks)
+credentials:
+- PE_LICENSE_EIT
+min_salary: 450000
+currency: JPY
+requires_sponsorship: false

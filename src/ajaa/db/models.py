@@ -316,8 +316,11 @@ class Job(Base):
         sa.String(64), nullable=True
     )
 
-    applications: orm.Mapped[list["Application"]] = orm.relationship(
-        "Application", back_populates="job"
+    # Injection defense & quarantine (PRD §23.6, §33.6)
+    injection_suspected: orm.Mapped[bool] = orm.mapped_column(sa.Boolean, default=False)
+    quarantined: orm.Mapped[bool] = orm.mapped_column(sa.Boolean, default=False)
+    quarantine_reason: orm.Mapped[Optional[str]] = orm.mapped_column(
+        sa.String(500), nullable=True
     )
 
     __table_args__ = (
@@ -409,6 +412,49 @@ class Application(Base):
     )
     audit_events: orm.Mapped[list["AuditEvent"]] = orm.relationship(
         "AuditEvent", back_populates="application", cascade="all, delete-orphan"
+    )
+    steps: orm.Mapped[list["ApplicationStep"]] = orm.relationship(
+        "ApplicationStep", back_populates="application", cascade="all, delete-orphan",
+        order_by="ApplicationStep.step_index",
+    )
+
+
+# ── application_step ──────────────────────────────────────────────────────────
+
+class ApplicationStep(Base):
+    """
+    Persisted browser automation steps.
+    Every step is written to the DB before action with ok=None,
+    and updated after with outcome, duration, and error if any.
+    """
+    __tablename__ = "application_steps"
+
+    id: orm.Mapped[str] = orm.mapped_column(
+        sa.String(36), primary_key=True, default=_new_uuid
+    )
+    application_id: orm.Mapped[str] = orm.mapped_column(
+        sa.String(36), sa.ForeignKey("applications.id", ondelete="CASCADE"), index=True
+    )
+
+    step_index: orm.Mapped[int] = orm.mapped_column(sa.Integer, default=0)
+    action: orm.Mapped[str] = orm.mapped_column(sa.String(50))
+    field_name: orm.Mapped[Optional[str]] = orm.mapped_column(sa.String(200), nullable=True)
+    field_value: orm.Mapped[Optional[str]] = orm.mapped_column(sa.Text, nullable=True, info={"pii": True})
+
+    ok: orm.Mapped[Optional[bool]] = orm.mapped_column(sa.Boolean, nullable=True, default=None)
+    error_message: orm.Mapped[Optional[str]] = orm.mapped_column(sa.Text, nullable=True)
+    screenshot_path: orm.Mapped[Optional[str]] = orm.mapped_column(sa.String(1000), nullable=True)
+    duration_ms: orm.Mapped[Optional[float]] = orm.mapped_column(sa.Float, nullable=True)
+
+    started_at: orm.Mapped[datetime] = orm.mapped_column(
+        sa.DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+    completed_at: orm.Mapped[Optional[datetime]] = orm.mapped_column(
+        sa.DateTime, nullable=True
+    )
+
+    application: orm.Mapped["Application"] = orm.relationship(
+        "Application", back_populates="steps"
     )
 
 

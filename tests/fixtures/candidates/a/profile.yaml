@@ -1,0 +1,19 @@
+full_name: Alex Chen (Synthetic)
+email: alex.synthetic@test-candidate-a.org
+phone: +1-555-0101
+location: Seattle, WA, USA
+work_mode: remote
+title: Software Engineer
+seniority: mid
+skills:
+- Python
+- TypeScript
+- FastAPI
+- PostgreSQL
+- Docker
+- AWS
+education: BS Computer Science, State University, GPA 3.8
+credentials: []
+min_salary: 120000
+currency: USD
+requires_sponsorship: false

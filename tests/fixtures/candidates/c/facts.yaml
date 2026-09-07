@@ -1,0 +1,32 @@
+- key: personal.name.full
+  value: Kenji Takahashi (Synthetic)
+  source: USER_ENTERED
+  confidence: CONFIRMED
+- key: personal.contact.email
+  value: kenji.synthetic@test-candidate-c.jp
+  source: USER_ENTERED
+  confidence: CONFIRMED
+- key: personal.location.city
+  value: Nagoya
+  source: CV_STRUCTURED
+  confidence: HIGH
+- key: credential.pe_license_eit
+  value: 'EIT Registered #88392'
+  source: USER_ENTERED
+  confidence: CONFIRMED
+- key: skill.solidworks.experience
+  value: 3 years
+  source: CV_STRUCTURED
+  confidence: HIGH
+- key: language.japanese.proficiency
+  value: native
+  source: USER_ENTERED
+  confidence: CONFIRMED
+- key: language.english.proficiency
+  value: professional
+  source: USER_ENTERED
+  confidence: CONFIRMED
+- key: preferences.work_mode
+  value: onsite
+  source: USER_ENTERED
+  confidence: CONFIRMED

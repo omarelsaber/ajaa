@@ -27,6 +27,7 @@ def apply_hard_filters(
     candidate_id: str,
     company_blacklist: list[str] | None = None,
     exclude_applied: bool = True,
+    candidate_credentials: list[str] | None = None,
 ) -> FilterResult:
     """
     Apply hard pre-filters to a job dict.
@@ -38,6 +39,22 @@ def apply_hard_filters(
 
     Returns FilterResult(passed=True) if job should proceed to scoring.
     """
+    # ── Quarantine gate (PRD §23.6 / §33.6) ──────────────────────────────────
+    if job.get("quarantined", False) or job.get("injection_suspected", False):
+        reason = job.get("quarantine_reason") or "job quarantined for suspected prompt injection"
+        return FilterResult(passed=False, reason=f"quarantined: {reason}")
+
+    # ── Credential gate (PRD §11.7, §33.9: No soft credit) ───────────────────
+    required_creds = job.get("required_credentials") or []
+    if required_creds:
+        c_creds = {str(c).strip().upper() for c in (candidate_credentials or [])}
+        for req in required_creds:
+            if req.strip().upper() not in c_creds:
+                return FilterResult(
+                    passed=False,
+                    reason=f"credential_missing: requirement '{req}' not held by candidate",
+                )
+
     # ── Staleness gate ────────────────────────────────────────────────────────
     if job.get("is_stale", False):
         return FilterResult(passed=False, reason="job is stale (URL dead)")

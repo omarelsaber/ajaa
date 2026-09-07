@@ -1,0 +1,13 @@
+ALEX CHEN (Synthetic)
+Email: alex.synthetic@test-candidate-a.org | Phone: +1-555-0101 | Seattle, WA
+
+PROFESSIONAL SUMMARY
+Software engineer with 5 years experience in Python, FastAPI, Docker, and PostgreSQL.
+
+EXPERIENCE
+Software Engineer | CloudScale Inc | 2021 - Present
+- Built microservices using Python, FastAPI, PostgreSQL.
+- Automated CI/CD pipelines with Docker and AWS.
+
+EDUCATION
+BS Computer Science, GPA 3.8 | 2017 - 2021

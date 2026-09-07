@@ -1,0 +1,15 @@
+{
+  "id": "job-d-ambiguous",
+  "title": "Occupational Health Nurse Coordinator",
+  "company": "Aerospace Wellness Corp",
+  "location": "El Segundo, CA",
+  "remote_ok": false,
+  "min_salary": 44,
+  "required_skills": [
+    "Epic EHR",
+    "Patient Assessment"
+  ],
+  "required_credentials": [
+    "RN_STATE_LICENSE_CA"
+  ]
+}

@@ -1,0 +1,6 @@
+ranking_order:
+- job-d-strong
+- job-d-ambiguous
+- job-d-weak
+gate_failures:
+  job-d-cred-fail: credential_missing

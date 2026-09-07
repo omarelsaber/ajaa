@@ -1,0 +1,13 @@
+{
+  "id": "job-b-ambiguous",
+  "title": "Product Marketing Specialist",
+  "company": "SaaS Platform Inc",
+  "location": "Paris (Hybrid)",
+  "remote_ok": true,
+  "min_salary": 70000,
+  "required_skills": [
+    "SEO",
+    "Google Analytics"
+  ],
+  "required_credentials": []
+}

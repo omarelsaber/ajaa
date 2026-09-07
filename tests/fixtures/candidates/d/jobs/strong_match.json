@@ -1,0 +1,16 @@
+{
+  "id": "job-d-strong",
+  "title": "Registered Nurse - ICU / Step-down",
+  "company": "Pacific Coast Medical Center",
+  "location": "Los Angeles, CA (On-site)",
+  "remote_ok": false,
+  "min_salary": 48,
+  "required_skills": [
+    "Patient Assessment",
+    "Medication Administration",
+    "Epic EHR"
+  ],
+  "required_credentials": [
+    "RN_STATE_LICENSE_CA"
+  ]
+}

@@ -1,0 +1,32 @@
+- key: personal.name.full
+  value: Alex Chen (Synthetic)
+  source: USER_ENTERED
+  confidence: CONFIRMED
+- key: personal.contact.email
+  value: alex.synthetic@test-candidate-a.org
+  source: USER_ENTERED
+  confidence: CONFIRMED
+- key: personal.location.city
+  value: Seattle
+  source: CV_STRUCTURED
+  confidence: HIGH
+- key: preferences.work_mode
+  value: remote
+  source: USER_ENTERED
+  confidence: CONFIRMED
+- key: skill.python.experience
+  value: 5 years
+  source: CV_STRUCTURED
+  confidence: HIGH
+- key: skill.docker.experience
+  value: 3 years
+  source: CV_STRUCTURED
+  confidence: HIGH
+- key: compensation.minimum_base
+  value: '120000'
+  source: USER_ENTERED
+  confidence: CONFIRMED
+- key: authorization.work_eligible
+  value: 'True'
+  source: USER_ENTERED
+  confidence: CONFIRMED

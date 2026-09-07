@@ -1,0 +1,14 @@
+{
+  "id": "job-a-weak",
+  "title": "Junior Java Developer",
+  "company": "Legacy Corp",
+  "location": "Remote",
+  "remote_ok": true,
+  "min_salary": 80000,
+  "required_skills": [
+    "Java",
+    "Spring Boot",
+    "Oracle SQL"
+  ],
+  "required_credentials": []
+}

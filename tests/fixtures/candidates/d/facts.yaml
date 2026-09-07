@@ -1,0 +1,32 @@
+- key: personal.name.full
+  value: Maria Santos (Synthetic)
+  source: USER_ENTERED
+  confidence: CONFIRMED
+- key: personal.contact.email
+  value: maria.synthetic@test-candidate-d.org
+  source: USER_ENTERED
+  confidence: CONFIRMED
+- key: personal.location.state
+  value: California
+  source: USER_ENTERED
+  confidence: CONFIRMED
+- key: credential.rn_license
+  value: 'California Board of Registered Nursing #RN-849201'
+  source: USER_ENTERED
+  confidence: CONFIRMED
+- key: credential.bls_cert
+  value: AHA BLS Certified
+  source: USER_ENTERED
+  confidence: CONFIRMED
+- key: skill.epic_ehr.experience
+  value: 4 years
+  source: CV_STRUCTURED
+  confidence: HIGH
+- key: language.spanish.proficiency
+  value: working_professional
+  source: USER_ENTERED
+  confidence: CONFIRMED
+- key: preferences.work_mode
+  value: onsite
+  source: USER_ENTERED
+  confidence: CONFIRMED

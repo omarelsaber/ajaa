@@ -108,15 +108,106 @@ async def list_applications(
     })
 
 
+@router.get("/applications/{app_id}", response_class=HTMLResponse)
+async def get_application_replay(
+    request: Request,
+    app_id: str,
+    msg: str | None = None,
+    err: str | None = None,
+):
+    """Application Replay View with full provenance (PRD §31.2)."""
+    from ajaa.db.models import ApplicationStep, CV
+
+    with get_session() as session:
+        app = session.execute(
+            sa.select(Application).where(Application.id == app_id)
+        ).scalars().first()
+        if app is None:
+            return RedirectResponse(url="/applications?err=Application+not+found", status_code=303)
+
+        job = session.execute(sa.select(Job).where(Job.id == app.job_id)).scalars().first()
+        cv = session.execute(
+            sa.select(CV).where(CV.candidate_id == app.candidate_id, CV.is_active == True)
+        ).scalars().first()
+
+        answers = session.execute(
+            sa.select(ApplicationAnswer).where(ApplicationAnswer.application_id == app.id)
+        ).scalars().all()
+
+        steps = session.execute(
+            sa.select(ApplicationStep)
+            .where(ApplicationStep.application_id == app.id)
+            .order_by(ApplicationStep.step_index.asc())
+        ).scalars().all()
+
+        events = session.execute(
+            sa.select(AuditEvent)
+            .where(AuditEvent.application_id == app.id)
+            .order_by(AuditEvent.occurred_at.asc())
+        ).scalars().all()
+
+        return templates.TemplateResponse(request, "application_detail.html", {
+            "application": app,
+            "job": job,
+            "cv": cv,
+            "answers": answers,
+            "steps": steps,
+            "audit_events": events,
+            "success": msg,
+            "error": err,
+        })
+
+
+@router.post("/applications/approve-all", response_class=HTMLResponse)
+async def approve_all_apps_route(request: Request):
+    """Approve all applications currently in READY_FOR_REVIEW."""
+    candidate_id = _get_candidate_id()
+    count = 0
+    with get_session() as session:
+        apps = session.execute(
+            sa.select(Application).where(
+                Application.candidate_id == candidate_id,
+                Application.state.in_([ApplicationState.READY_FOR_REVIEW.value, ApplicationState.REVIEW.value]),
+            )
+        ).scalars().all()
+        app_ids = [a.id for a in apps]
+
+    for aid in app_ids:
+        try:
+            approve_application(aid, notes="Bulk approved via UI")
+            count += 1
+        except Exception:
+            pass
+
+    return RedirectResponse(url=f"/applications?msg=Approved+{count}+applications.", status_code=303)
+
+
+@router.post("/applications/{app_id}/run", response_class=HTMLResponse)
+async def run_application_route(request: Request, app_id: str, dry_run: bool = False):
+    """Trigger browser automation execution or --dry-run for an application."""
+    from ajaa.application.executor import execute_application
+
+    try:
+        res = execute_application(app_id, dry_run=dry_run, headless=True)
+        if res.success:
+            msg = res.message
+            return RedirectResponse(url=f"/applications/{app_id}?msg={msg}", status_code=303)
+        else:
+            err = res.message
+            return RedirectResponse(url=f"/applications/{app_id}?err={err}", status_code=303)
+    except Exception as e:
+        return RedirectResponse(url=f"/applications/{app_id}?err={e}", status_code=303)
+
+
 @router.post("/applications/{app_id}/prepare", response_class=HTMLResponse)
 async def prepare_app_route(request: Request, app_id: str):
     try:
         res = prepare_application(app_id)
         msg = f"Application answers prepared: {res.resolved_count} resolved, {res.needs_user_count} need attention."
     except Exception as e:
-        return RedirectResponse(url=f"/applications?err={e}", status_code=303)
+        return RedirectResponse(url=f"/applications/{app_id}?err={e}", status_code=303)
 
-    return RedirectResponse(url=f"/applications?msg={msg}", status_code=303)
+    return RedirectResponse(url=f"/applications/{app_id}?msg={msg}", status_code=303)
 
 
 @router.post("/applications/{app_id}/approve", response_class=HTMLResponse)
@@ -125,9 +216,9 @@ async def approve_app_route(request: Request, app_id: str):
         approve_application(app_id)
         msg = "Application approved by user."
     except Exception as e:
-        return RedirectResponse(url=f"/applications?err={e}", status_code=303)
+        return RedirectResponse(url=f"/applications/{app_id}?err={e}", status_code=303)
 
-    return RedirectResponse(url=f"/applications?msg={msg}", status_code=303)
+    return RedirectResponse(url=f"/applications/{app_id}?msg={msg}", status_code=303)
 
 
 @router.post("/applications/{app_id}/submit", response_class=HTMLResponse)
@@ -136,9 +227,9 @@ async def submit_app_route(request: Request, app_id: str):
         submit_application(app_id)
         msg = "Application marked as SUBMITTED."
     except Exception as e:
-        return RedirectResponse(url=f"/applications?err={e}", status_code=303)
+        return RedirectResponse(url=f"/applications/{app_id}?err={e}", status_code=303)
 
-    return RedirectResponse(url=f"/applications?msg={msg}", status_code=303)
+    return RedirectResponse(url=f"/applications/{app_id}?msg={msg}", status_code=303)
 
 
 @router.post("/applications/{app_id}/reject", response_class=HTMLResponse)

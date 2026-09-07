@@ -1,0 +1,13 @@
+{
+  "id": "job-b-weak",
+  "title": "Junior Graphic Designer",
+  "company": "Creative Studio",
+  "location": "Paris (Hybrid)",
+  "remote_ok": false,
+  "min_salary": 35000,
+  "required_skills": [
+    "Photoshop",
+    "Illustrator"
+  ],
+  "required_credentials": []
+}

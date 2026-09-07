@@ -97,3 +97,24 @@ class TestApplicationsRoutes:
         r = client.post(f"/applications/{app_id}/reject", follow_redirects=True)
         assert r.status_code == 200
         assert "REJECTED" in r.text
+
+    def test_get_application_replay_detail(self, client: TestClient, candidate_and_job):
+        """PRD §31.2: Replay detail page displays full provenance, steps, and Q&A."""
+        _, _, app_id = candidate_and_job
+        client.post(f"/applications/{app_id}/prepare", follow_redirects=True)
+        r = client.get(f"/applications/{app_id}")
+        assert r.status_code == 200
+        assert "Replay" in r.text
+        assert "Frontend Engineer" in r.text
+        assert "Test Dry-Run (Safe)" in r.text
+        assert "Grounded Questions" in r.text
+        assert "Immutable Audit Chain Log" in r.text
+
+    def test_approve_all_route(self, client: TestClient, candidate_and_job):
+        """Bulk approval for READY_FOR_REVIEW applications."""
+        _, _, app_id = candidate_and_job
+        client.post(f"/applications/{app_id}/prepare", follow_redirects=True)
+        r = client.post("/applications/approve-all", follow_redirects=True)
+        assert r.status_code == 200
+        assert "Approved 1 applications" in r.text
+        assert "APPROVED" in r.text

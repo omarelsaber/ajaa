@@ -1,0 +1,21 @@
+full_name: Maria Santos (Synthetic)
+email: maria.synthetic@test-candidate-d.org
+phone: +1-555-0404
+location: Los Angeles, CA, USA
+work_mode: onsite
+title: Registered Nurse
+seniority: mid
+skills:
+- Patient Assessment
+- Medication Administration
+- Epic EHR
+- IV Therapy
+- Critical Care
+education: Associate Degree in Nursing (ADN), NCLEX-RN passed
+credentials:
+- RN_STATE_LICENSE_CA
+- BLS_CERT
+- ACLS_CERT
+min_salary: 45
+currency: USD
+requires_sponsorship: false

@@ -1,0 +1,14 @@
+{
+  "id": "job-a-strong",
+  "title": "Senior Python Backend Engineer",
+  "company": "Apex Distributed Systems",
+  "location": "Remote",
+  "remote_ok": true,
+  "min_salary": 130000,
+  "required_skills": [
+    "Python",
+    "Docker",
+    "PostgreSQL"
+  ],
+  "required_credentials": []
+}

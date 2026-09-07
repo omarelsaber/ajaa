@@ -1,0 +1,13 @@
+{
+  "id": "job-b-location-fail",
+  "title": "Senior Marketing Manager (Tokyo On-Site)",
+  "company": "AsiaPacific Retail",
+  "location": "Tokyo, Japan",
+  "remote_ok": false,
+  "min_salary": 90000,
+  "required_skills": [
+    "HubSpot",
+    "Brand Campaigns"
+  ],
+  "required_credentials": []
+}

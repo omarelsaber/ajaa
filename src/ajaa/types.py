@@ -307,6 +307,8 @@ class ApplicationState(str, enum.Enum):
     QUESTIONS = "QUESTIONS"
     STEP_DONE = "STEP_DONE"
     REVIEW = "REVIEW"          # human reviews before submit; always in v0.1
+    READY_FOR_REVIEW = "READY_FOR_REVIEW"  # synonym for REVIEW
+    APPROVED = "APPROVED"      # human approved for submission
     SUBMITTING = "SUBMITTING"  # NEVER re-entered for the same application
     VERIFYING = "VERIFYING"
 
@@ -319,8 +321,10 @@ class ApplicationState(str, enum.Enum):
     REJECTED = "REJECTED"          # hard gate rejected
     SKIPPED = "SKIPPED"            # user skipped
     EXPIRED = "EXPIRED"            # job no longer live (freshness gate)
+    STALE_JOB = "STALE_JOB"        # synonym for EXPIRED
     ABANDONED = "ABANDONED"        # user abandoned
     NEEDS_USER_ACTION = "NEEDS_USER_ACTION"
+    NEEDS_USER = "NEEDS_USER"      # synonym for NEEDS_USER_ACTION
     LOGIN_REQUIRED = "LOGIN_REQUIRED"
     REDIRECTED = "REDIRECTED"
     BLOCKED_BY_SITE = "BLOCKED_BY_SITE"    # CAPTCHA, bot check, etc.

@@ -1,0 +1,14 @@
+{
+  "id": "job-a-ambiguous",
+  "title": "DevOps / Reliability Engineer",
+  "company": "InfraCorp",
+  "location": "Remote",
+  "remote_ok": true,
+  "min_salary": 125000,
+  "required_skills": [
+    "Docker",
+    "AWS",
+    "Go"
+  ],
+  "required_credentials": []
+}

@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% block title %}Application #{{ application.id[:8] }} Replay — AJAA{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:1.25rem;">
+  <a href="/applications" style="color:var(--fg-muted); text-decoration:none; font-size:0.85rem;">&larr; Back to Applications</a>
+</div>
+
+{% if error %}
+<div class="alert alert-error" style="margin-bottom:1.25rem;">{{ error }}</div>
+{% endif %}
+{% if success %}
+<div class="alert alert-success" style="margin-bottom:1.25rem;">{{ success }}</div>
+{% endif %}
+
+<!-- Application Header Card (PRD §31.2) -->
+<div class="card" style="margin-bottom:1.5rem; display:flex; flex-direction:column; gap:1rem;">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+    <div>
+      <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.35rem;">
+        <h1 style="font-size:1.4rem; font-weight:800; margin:0;">
+          {{ job.title if job else "Untitled Role" }}
+        </h1>
+        <!-- State Badge -->
+        <span style="font-size:0.8rem; font-weight:700; padding:0.25rem 0.75rem; border-radius:999px;
+          {% if application.state == 'SUBMITTED' %}background:rgba(34,197,94,0.15); color:#22c55e;
+          {% elif application.state == 'READY_FOR_REVIEW' or application.state == 'REVIEW' %}background:rgba(99,102,241,0.15); color:#818cf8;
+          {% elif application.state == 'APPROVED' %}background:rgba(59,130,246,0.15); color:#60a5fa;
+          {% elif application.state == 'UNCERTAIN' %}background:rgba(249,115,22,0.15); color:#f97316;
+          {% elif application.state == 'NEEDS_USER_ACTION' or application.state == 'NEEDS_USER' %}background:rgba(234,179,8,0.15); color:#eab308;
+          {% elif application.state == 'FAILED' or application.state == 'REJECTED' or application.state == 'EXPIRED' or application.state == 'STALE_JOB' %}background:rgba(239,68,68,0.15); color:#ef4444;
+          {% else %}background:rgba(148,163,184,0.15); color:var(--fg-muted);{% endif %}">
+          {{ application.state }}
+        </span>
+      </div>
+
+      <div class="text-muted text-sm" style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center;">
+        <span style="font-weight:600; color:var(--fg);">{{ job.company if job else "Unknown Company" }}</span>
+        {% if job and job.location %}<span>&bull; {{ job.location }}</span>{% endif %}
+        <span>&bull; Connector: <strong style="color:var(--accent);">{{ job.source_connector if job else "Greenhouse" }}</strong></span>
+        {% if job and job.match_score %}
+        <span>&bull; Match: <strong style="color:#22c55e;">{{ (job.match_score * 100)|round|int }}%</strong></span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Actions Control Toolbar -->
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+      <!-- Dry Run Button -->
+      <form method="post" action="/applications/{{ application.id }}/run?dry_run=true" style="margin:0;">
+        <button type="submit" class="btn btn-ghost" style="font-size:0.85rem; padding:0.4rem 0.9rem; border-color:var(--accent); color:var(--accent);" title="Fills form in headless browser, captures screenshot, stops before submit">
+          &#9881; Test Dry-Run (Safe)
+        </button>
+      </form>
+
+      {% if application.state == 'READY_FOR_REVIEW' or application.state == 'REVIEW' %}
+      <form method="post" action="/applications/{{ application.id }}/approve" style="margin:0;">
+        <button type="submit" class="btn btn-primary" style="font-size:0.85rem; padding:0.4rem 0.9rem;">
+          &#10003; Approve
+        </button>
+      </form>
+      {% endif %}
+
+      {% if application.state == 'APPROVED' or application.state == 'READY_FOR_REVIEW' %}
+      <form method="post" action="/applications/{{ application.id }}/run?dry_run=false" style="margin:0;" onsubmit="return confirm('Ready to submit real application? This will navigate and submit through the browser.');">
+        <button type="submit" class="btn btn-primary" style="font-size:0.85rem; padding:0.4rem 0.9rem; background:#22c55e; border-color:#22c55e;">
+          Submit Application &rarr;
+        </button>
+      </form>
+      {% endif %}
+
+      {% if application.state not in ('SUBMITTED', 'REJECTED', 'ABANDONED') %}
+      <form method="post" action="/applications/{{ application.id }}/reject" style="margin:0;">
+        <button type="submit" class="btn btn-ghost" style="font-size:0.85rem; padding:0.4rem 0.8rem; color:var(--danger); border-color:rgba(239,68,68,0.3);">
+          Discard
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- CV & Provenance Metadata -->
+  <div style="background:var(--surface-2); border-radius:8px; padding:0.6rem 0.85rem; font-size:0.8rem; display:flex; flex-wrap:wrap; gap:1.25rem; border:1px solid var(--border);">
+    <div>
+      <span class="text-muted">CV Attached:</span>
+      <strong>{{ cv.filename if cv else "Default Canonical CV" }}</strong>
+      {% if cv and cv.content_hash %}
+      <code style="font-size:0.75rem; color:var(--fg-muted);">({{ cv.content_hash[:10] }}...)</code>
+      {% endif %}
+    </div>
+    <div>
+      <span class="text-muted">Created:</span>
+      <span>{{ application.created_at.strftime('%Y-%m-%d %H:%M:%S UTC') if application.created_at else "N/A" }}</span>
+    </div>
+    {% if application.submitted_at %}
+    <div>
+      <span class="text-muted">Submitted:</span>
+      <span style="color:#22c55e; font-weight:600;">{{ application.submitted_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</span>
+    </div>
+    {% endif %}
+    {% if application.confirmation_url %}
+    <div>
+      <span class="text-muted">Confirmation:</span>
+      <a href="{{ application.confirmation_url }}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);">Receipt URL &nearr;</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Main Split View: Execution Timeline vs Grounded Q&A -->
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap:1.5rem; margin-bottom:1.5rem;">
+
+  <!-- Column 1: Step-by-Step Browser Execution Timeline (ApplicationSteps) -->
+  <div class="card" style="display:flex; flex-direction:column; gap:1rem;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="font-size:1.05rem; font-weight:700; margin:0;">
+        Browser Execution Steps
+      </h3>
+      <span class="badge" style="font-size:0.75rem;">{{ steps|length }} steps recorded</span>
+    </div>
+
+    {% if steps %}
+    <div style="display:flex; flex-direction:column; gap:0.75rem; padding-left:0.5rem; border-left:2px solid var(--border);">
+      {% for s in steps %}
+      <div style="position:relative; padding-left:1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem;">
+          <div>
+            <span style="font-family:monospace; font-weight:700; font-size:0.8rem; color:var(--accent);">
+              #{{ s.step_index }} {{ s.action }}
+            </span>
+            {% if s.field_name %}
+            <span class="text-muted" style="font-size:0.75rem;">({{ s.field_name }})</span>
+            {% endif %}
+          </div>
+          <div>
+            {% if s.ok is none %}
+            <span style="font-size:0.7rem; font-weight:700; padding:0.1rem 0.4rem; border-radius:4px; background:rgba(234,179,8,0.15); color:#eab308;">IN_PROGRESS</span>
+            {% elif s.ok %}
+            <span style="font-size:0.7rem; font-weight:700; padding:0.1rem 0.4rem; border-radius:4px; background:rgba(34,197,94,0.15); color:#22c55e;">OK</span>
+            {% else %}
+            <span style="font-size:0.7rem; font-weight:700; padding:0.1rem 0.4rem; border-radius:4px; background:rgba(239,68,68,0.15); color:#ef4444;">FAILED</span>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if s.field_value %}
+        <div style="font-size:0.8rem; color:var(--fg-muted); margin-top:0.2rem; word-break:break-all;">
+          Value: <code style="color:var(--fg);">{{ s.field_value }}</code>
+        </div>
+        {% endif %}
+
+        {% if s.error_message %}
+        <div style="font-size:0.75rem; color:var(--danger); margin-top:0.2rem;">
+          Error: {{ s.error_message }}
+        </div>
+        {% endif %}
+
+        <div class="text-muted" style="font-size:0.7rem; margin-top:0.25rem;">
+          {{ s.started_at.strftime('%H:%M:%S') if s.started_at else '' }}
+          {% if s.duration_ms %}&bull; {{ s.duration_ms|round|int }}ms{% endif %}
+          {% if s.screenshot_path %}&bull; <span style="color:var(--accent);">&#128247; Screenshot captured</span>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center; padding:2rem 1rem; color:var(--fg-muted); font-size:0.85rem;">
+      No browser execution steps recorded yet.<br>Click "Test Dry-Run (Safe)" to preview form filling.
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Column 2: Grounded Questions & Answers -->
+  <div class="card" style="display:flex; flex-direction:column; gap:1rem;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="font-size:1.05rem; font-weight:700; margin:0;">
+        Grounded Questions &amp; Answers
+      </h3>
+      <span class="badge" style="font-size:0.75rem;">{{ answers|length }} fields</span>
+    </div>
+
+    {% if answers %}
+    <div style="display:flex; flex-direction:column; gap:0.85rem;">
+      {% for a in answers %}
+      <div style="background:var(--surface-2); border-radius:8px; padding:0.75rem; border:1px solid var(--border);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.35rem;">
+          <span style="font-size:0.85rem; font-weight:600; color:var(--fg);">
+            {{ a.field_label }}
+          </span>
+          <span style="font-size:0.7rem; font-weight:700; padding:0.1rem 0.45rem; border-radius:4px;
+            {% if a.answer_source == 'RESOLVED' %}background:rgba(34,197,94,0.15); color:#22c55e;
+            {% else %}background:rgba(234,179,8,0.15); color:#eab308;{% endif %}">
+            {{ a.answer_source }} ({{ a.confidence }})
+          </span>
+        </div>
+        <div style="font-size:0.85rem; font-weight:700; color:var(--accent); margin-bottom:0.25rem;">
+          {{ a.answer_value if a.answer_value else "<empty>" }}
+        </div>
+        <div class="text-muted" style="font-size:0.7rem;">
+          Grounded Fact: Verified Canonical Profile &bull; Polarity Invariant Checked
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center; padding:2rem 1rem; color:var(--fg-muted); font-size:0.85rem;">
+      No answers resolved yet.
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Full Immutable Audit Events Log (PRD §31.2) -->
+<div class="card" style="margin-bottom:2rem;">
+  <h3 style="font-size:1.05rem; font-weight:700; margin-bottom:0.75rem;">
+    &#128220; Immutable Audit Chain Log
+  </h3>
+  <div style="overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; font-size:0.8rem;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border); text-align:left; color:var(--fg-muted);">
+          <th style="padding:0.5rem;">Timestamp (UTC)</th>
+          <th style="padding:0.5rem;">Event Type</th>
+          <th style="padding:0.5rem;">Transition</th>
+          <th style="padding:0.5rem;">Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ev in audit_events %}
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:0.5rem; font-family:monospace; color:var(--fg-muted);">{{ ev.occurred_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+          <td style="padding:0.5rem; font-weight:700; color:var(--accent);">{{ ev.event_type }}</td>
+          <td style="padding:0.5rem; color:var(--fg-muted);">{{ ev.from_state or 'NONE' }} &rarr; {{ ev.to_state }}</td>
+          <td style="padding:0.5rem; color:var(--fg-muted); font-size:0.75rem; font-family:monospace;">{{ ev.detail_json or '' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
