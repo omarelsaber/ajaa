@@ -113,9 +113,21 @@ async def dashboard(request: Request):
                 )
             ).scalar_one()
 
+    from ajaa.config import get_settings
+    settings = get_settings()
+    safety_info = {
+        "safety_ceiling": settings.policy.safety.max_applications_per_day,
+        "operational_target": settings.policy.operational.max_applications_per_day or "UNSET (null)",
+        "review_mode": settings.policy.review.default_mode,
+        "invariant_i6": "HALT ON SIGHT",
+        "invariant_i10": "ROUTE INTERCEPTOR ACTIVE",
+        "injection_defense": "LAYER 6 PREFILTER ACTIVE",
+    }
+
     return templates.TemplateResponse(request, "dashboard.html", {
         "candidate": candidate,
         "stats": stats,
+        "safety": safety_info,
     })
 
 

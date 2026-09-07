@@ -95,6 +95,11 @@ class CanonicalProfile:
             if f.usable_in_applications and f.state == FactState.KNOWN.value
         }
 
+    @property
+    def profile_version_hash(self) -> str:
+        """Deterministic SHA-256 hash of canonical facts, schema version, and ontology (PRD §11.8)."""
+        return compute_profile_version_hash(self)
+
     def __repr__(self) -> str:
         covered = sum(1 for f in self._facts.values()
                       if f.usable_in_applications and f.state == FactState.KNOWN.value)
@@ -105,6 +110,32 @@ class CanonicalProfile:
             f"facts_covered={covered}"
             f")"
         )
+
+
+def compute_profile_version_hash(
+    facts_or_profile: dict[str, Any] | CanonicalProfile,
+    schema_version: str = "1.0",
+    ontology_version: str = "1.0",
+) -> str:
+    """
+    Deterministic profile version hash (PRD §11.8, §40.1).
+    Same canonical facts + schema_version + ontology_version -> same SHA-256 hash.
+    """
+    import hashlib
+    import json
+
+    if isinstance(facts_or_profile, CanonicalProfile):
+        fact_dict = facts_or_profile.to_dict()
+    else:
+        fact_dict = {k: str(v) for k, v in sorted(facts_or_profile.items())}
+
+    payload = {
+        "schema_version": schema_version,
+        "ontology_version": ontology_version,
+        "facts": fact_dict,
+    }
+    canon = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(canon.encode("utf-8")).hexdigest()
 
 
 def build_profile(candidate_id: str | None = None) -> CanonicalProfile:

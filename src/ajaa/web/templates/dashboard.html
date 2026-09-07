@@ -47,13 +47,57 @@
 </div>
 
 {% if stats.profile_pct < 100 %}
-<div class="alert alert-info">
+<div class="alert alert-info" style="margin-bottom:2rem;">
   Your profile is {{ stats.profile_pct }}% complete.
   <a href="/interview" style="color:var(--accent); font-weight:600;">Complete your profile &rarr;</a>
 </div>
 {% else %}
-<div class="alert alert-success">
+<div class="alert alert-success" style="margin-bottom:2rem;">
   &#10003; Profile complete &mdash; AJAA is ready to match and apply.
 </div>
 {% endif %}
+
+<!-- Safety Ceilings & Governance (PRD §26.1, §26.4) -->
+<div class="card" style="border-left: 4px solid var(--accent); margin-bottom: 2rem;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+    <h2 style="font-size:1.1rem; font-weight:700; margin:0;">
+      🛡️ Safety Ceilings &amp; Governance (PRD §26)
+    </h2>
+    <span class="badge badge-outline" style="font-size:0.75rem;">PRD Guard Rails</span>
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1rem;">
+    <div style="background:var(--bg-subtle, rgba(255,255,255,0.03)); padding:0.75rem; border-radius:6px;">
+      <div class="text-xs text-muted">Daily Safety Ceiling (PRD §26.1)</div>
+      <div style="font-weight:700; font-size:1.1rem; color:var(--accent); margin-top:0.25rem;">
+        {{ safety.safety_ceiling }} apps/day
+      </div>
+      <div class="text-xs text-muted" style="margin-top:0.2rem;">Engineering hard limit &le; 15</div>
+    </div>
+
+    <div style="background:var(--bg-subtle, rgba(255,255,255,0.03)); padding:0.75rem; border-radius:6px;">
+      <div class="text-xs text-muted">Operational Policy (PRD §26.1)</div>
+      <div style="font-weight:700; font-size:1.1rem; color:#eab308; margin-top:0.25rem;">
+        {{ safety.operational_target }}
+      </div>
+      <div class="text-xs text-muted" style="margin-top:0.2rem;">User target (never confused with ceiling)</div>
+    </div>
+
+    <div style="background:var(--bg-subtle, rgba(255,255,255,0.03)); padding:0.75rem; border-radius:6px;">
+      <div class="text-xs text-muted">Invariant I6: Consent Checkboxes</div>
+      <div style="font-weight:700; font-size:0.95rem; color:#22c55e; margin-top:0.25rem;">
+        {{ safety.invariant_i6 }}
+      </div>
+      <div class="text-xs text-muted" style="margin-top:0.2rem;">Zero auto-checking in v0.1</div>
+    </div>
+
+    <div style="background:var(--bg-subtle, rgba(255,255,255,0.03)); padding:0.75rem; border-radius:6px;">
+      <div class="text-xs text-muted">Invariant I10: Navigation Allowlist</div>
+      <div style="font-weight:700; font-size:0.95rem; color:#22c55e; margin-top:0.25rem;">
+        {{ safety.invariant_i10 }}
+      </div>
+      <div class="text-xs text-muted" style="margin-top:0.2rem;">Route interception active</div>
+    </div>
+  </div>
+</div>
 {% endblock %}

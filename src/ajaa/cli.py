@@ -322,5 +322,29 @@ def backup(
         raise typer.Exit(code=1)
 
 
+# ── ajaa verify-audit ─────────────────────────────────────────────────────────
+
+@app.command("verify-audit")
+def verify_audit() -> None:
+    """Verify cryptographic integrity of the audit log hash chain (PRD §23.7)."""
+    from ajaa.obs.events import get_audit_log_path, verify_audit_chain
+
+    path = get_audit_log_path()
+    console.print("\n[bold]AJAA Audit Log Hash Chain Verification (PRD §23.7)[/bold]")
+    console.print(f"  Mirror path: [cyan]{path}[/cyan]\n")
+
+    if not path.exists():
+        console.print("  [yellow]No audit events recorded yet.[/yellow]")
+        return
+
+    valid, count, error = verify_audit_chain(path)
+    if valid:
+        console.print(f"  [green]OK[/green] Hash chain verified: [bold]{count}[/bold] events cryptographically sound.")
+    else:
+        console.print(f"  [red]FAIL[/red] Cryptographic verification failed at event {count}!")
+        console.print(f"       [red]{error}[/red]")
+        raise typer.Exit(code=1)
+
+
 if __name__ == "__main__":
     app()
