@@ -185,10 +185,11 @@ async def approve_all_apps_route(request: Request):
 @router.post("/applications/{app_id}/run", response_class=HTMLResponse)
 async def run_application_route(request: Request, app_id: str, dry_run: bool = False):
     """Trigger browser automation execution or --dry-run for an application."""
+    import asyncio
     from ajaa.application.executor import execute_application
 
     try:
-        res = execute_application(app_id, dry_run=dry_run, headless=True)
+        res = await asyncio.to_thread(execute_application, app_id, dry_run=dry_run, headless=True)
         if res.success:
             msg = res.message
             return RedirectResponse(url=f"/applications/{app_id}?msg={msg}", status_code=303)

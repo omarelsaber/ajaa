@@ -162,6 +162,23 @@ def execute_application(
 
             t0 = time.time()
             descriptor = connector.probe(page)
+            if not descriptor.fields:
+                with get_session() as session:
+                    app = session.execute(sa.select(Application).where(Application.id == application_id)).scalars().first()
+                    transition_to(
+                        session, app, ApplicationState.NEEDS_USER_ACTION,
+                        detail={"reason": "No form controls detected on page"}
+                    )
+                    record_step_complete(session, step_id, ok=False, error_message="No form controls detected on page", duration_ms=(time.time() - t0) * 1000)
+                    session.commit()
+                return ExecutionResult(
+                    application_id=application_id,
+                    final_state=ApplicationState.NEEDS_USER_ACTION,
+                    is_dry_run=dry_run,
+                    success=False,
+                    message="No application form controls detected on page. This posting may require manual application or external redirect.",
+                )
+
             with get_session() as session:
                 app = session.execute(sa.select(Application).where(Application.id == application_id)).scalars().first()
                 transition_to(
