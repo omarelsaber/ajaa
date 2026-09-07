@@ -290,3 +290,49 @@ class TestStateMachine:
             assert s.ok is True
             assert s.screenshot_path == "/tmp/shot.png"
             assert s.duration_ms == 120.0
+
+    def test_approved_transitions_and_dry_run(self, candidate_with_facts: str, test_job: str):
+        """Test transitions from APPROVED state: STARTED, FAILED, REVIEW, and STEP_DONE -> APPROVED."""
+        from ajaa.application.state_machine import transition_to
+        import sqlalchemy as sa
+
+        with get_session() as session:
+            app = Application(
+                candidate_id=candidate_with_facts,
+                job_id=test_job,
+                state=ApplicationState.APPROVED.value,
+                review_decision="APPROVED",
+            )
+            session.add(app)
+            session.commit()
+            app_id = app.id
+
+        # 1. APPROVED -> STARTED (browser launch)
+        with get_session() as session:
+            app = session.execute(sa.select(Application).where(Application.id == app_id)).scalars().first()
+            transition_to(session, app, ApplicationState.STARTED)
+            session.commit()
+            assert app.state == ApplicationState.STARTED.value
+
+        # 2. STARTED -> FORM_DETECTED -> FILLING -> STEP_DONE
+        with get_session() as session:
+            app = session.execute(sa.select(Application).where(Application.id == app_id)).scalars().first()
+            transition_to(session, app, ApplicationState.FORM_DETECTED)
+            transition_to(session, app, ApplicationState.FILLING)
+            transition_to(session, app, ApplicationState.STEP_DONE)
+            session.commit()
+            assert app.state == ApplicationState.STEP_DONE.value
+
+        # 3. STEP_DONE -> APPROVED (dry run completion preserves approval)
+        with get_session() as session:
+            app = session.execute(sa.select(Application).where(Application.id == app_id)).scalars().first()
+            transition_to(session, app, ApplicationState.APPROVED)
+            session.commit()
+            assert app.state == ApplicationState.APPROVED.value
+
+        # 4. APPROVED -> FAILED (navigation / browser error handling)
+        with get_session() as session:
+            app = session.execute(sa.select(Application).where(Application.id == app_id)).scalars().first()
+            transition_to(session, app, ApplicationState.FAILED, detail={"error": "Browser crashed"})
+            session.commit()
+            assert app.state == ApplicationState.FAILED.value

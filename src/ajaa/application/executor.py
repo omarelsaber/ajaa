@@ -20,7 +20,7 @@ from typing import Any, Optional
 import time
 import sqlalchemy as sa
 
-from ajaa.application.connectors.greenhouse import GreenhouseConnector
+from ajaa.application.connectors import FillPlan, get_connector
 from ajaa.application.state_machine import (
     ApplicationState,
     prepare_application,
@@ -121,7 +121,7 @@ def execute_application(
         ).scalars().all()
         answers_dict = {a.field_label: a.answer_value for a in answers}
 
-    connector = GreenhouseConnector()
+    connector = get_connector(job)
     step_idx = 0
 
     try:
@@ -191,8 +191,7 @@ def execute_application(
 
                 t0 = time.time()
                 try:
-                    mini_plan = connector.plan.__annotations__  # dummy
-                    report = connector.fill(page, connector.plan(descriptor, candidate_facts, answers_dict, cv_path).__class__(operations=[op]))
+                    report = connector.fill(page, FillPlan(operations=[op]))
                     if report.needs_user:
                         with get_session() as session:
                             record_step_complete(session, step_id, ok=False, error_message=report.needs_user_reason, duration_ms=(time.time() - t0) * 1000)
@@ -231,8 +230,13 @@ def execute_application(
                     step = record_step_start(session, application_id, action="WOULD_SUBMIT", step_index=step_idx)
                     record_step_complete(session, step.id, ok=True, screenshot_path=str(dry_shot))
                     app = session.execute(sa.select(Application).where(Application.id == application_id)).scalars().first()
+                    target_state = (
+                        ApplicationState.APPROVED
+                        if (app and app.review_decision == "APPROVED")
+                        else ApplicationState.REVIEW
+                    )
                     transition_to(
-                        session, app, ApplicationState.REVIEW,
+                        session, app, target_state,
                         event_type="DRY_RUN_COMPLETED",
                         detail={"screenshot": str(dry_shot), "note": "Dry-run mode stopped before submit_click"}
                     )
@@ -240,7 +244,7 @@ def execute_application(
 
                 return ExecutionResult(
                     application_id=application_id,
-                    final_state=ApplicationState.REVIEW,
+                    final_state=target_state,
                     is_dry_run=True,
                     success=True,
                     message="Dry run executed successfully. Form was filled and verified without submitting.",
@@ -323,13 +327,16 @@ def execute_application(
         with get_session() as session:
             app = session.execute(sa.select(Application).where(Application.id == application_id)).scalars().first()
             if app:
-                curr_state = ApplicationState(app.state)
-                # Crash resolution: if in SUBMITTING/VERIFYING -> UNCERTAIN, else FAILED
-                if curr_state in (ApplicationState.SUBMITTING, ApplicationState.VERIFYING):
-                    transition_to(session, app, ApplicationState.UNCERTAIN, detail={"crash_error": str(exc)})
-                else:
-                    transition_to(session, app, ApplicationState.FAILED, detail={"error": str(exc)})
-                session.commit()
+                try:
+                    curr_state = ApplicationState(app.state)
+                    # Crash resolution: if in SUBMITTING/VERIFYING -> UNCERTAIN, else FAILED
+                    if curr_state in (ApplicationState.SUBMITTING, ApplicationState.VERIFYING):
+                        transition_to(session, app, ApplicationState.UNCERTAIN, detail={"crash_error": str(exc)})
+                    else:
+                        transition_to(session, app, ApplicationState.FAILED, detail={"error": str(exc)})
+                    session.commit()
+                except Exception:
+                    pass
 
         return ExecutionResult(
             application_id=application_id,
