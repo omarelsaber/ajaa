@@ -24,14 +24,22 @@
       &#128269; Discover Remote Jobs
     </h2>
     <form method="post" action="/jobs/scrape" style="display:flex; flex-direction:column; gap:0.75rem;">
-      <input
-        type="text"
-        name="keyword"
-        placeholder="Keywords (e.g. python, backend) or leave blank for auto"
-        style="background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:0.5rem 0.75rem; color:var(--fg); font-size:0.85rem;"
-      >
+      <div style="display:flex; gap:0.5rem;">
+        <input
+          type="text"
+          name="keyword"
+          placeholder="Keywords (e.g. ai, python) or blank for auto"
+          style="flex:1; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:0.45rem 0.75rem; color:var(--fg); font-size:0.85rem;"
+        >
+        <select name="source" style="background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:0.45rem 0.5rem; color:var(--fg); font-size:0.85rem;">
+          <option value="all">All Sources</option>
+          <option value="greenhouse">Greenhouse (Cloudflare, Elastic...)</option>
+          <option value="lever">Lever (Spotify, Brex...)</option>
+          <option value="remoteok">RemoteOK</option>
+        </select>
+      </div>
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span class="text-muted text-sm">Sources: RemoteOK (Live)</span>
+        <span class="text-muted text-sm">Tier A ATS &amp; Remote Boards</span>
         <button type="submit" class="btn btn-primary" style="font-size:0.85rem; padding:0.45rem 1rem;">
           Run Scraper
         </button>

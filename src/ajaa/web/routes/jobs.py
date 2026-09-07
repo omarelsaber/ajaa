@@ -24,6 +24,8 @@ from ajaa.scraper.base import SearchQuery
 from ajaa.scraper.normalizer import ingest_jobs
 from ajaa.scraper.paste import PasteJobInput, ingest_pasted_job
 from ajaa.scraper.remoteok import RemoteOKScraper
+from ajaa.scraper.greenhouse import GreenhouseScraper
+from ajaa.scraper.lever import LeverScraper
 
 router = APIRouter()
 
@@ -95,6 +97,7 @@ async def list_jobs(
 async def scrape_jobs(
     request: Request,
     keyword: Annotated[str, Form()] = "",
+    source: Annotated[str, Form()] = "all",
 ):
     candidate = _get_or_create_candidate()
     profile_dict = _get_profile_dict(candidate.id)
@@ -112,18 +115,36 @@ async def scrape_jobs(
             keywords.append(primary_lang)
 
     if not keywords:
-        keywords = ["python", "software engineer", "developer"]
+        keywords = ["ai", "engineer", "python", "developer"]
 
-    scraper = RemoteOKScraper()
-    raw_jobs = scraper.scrape(SearchQuery(keywords=keywords, max_results=30))
+    query = SearchQuery(keywords=keywords, max_results=30)
+    raw_jobs = []
+
+    if source in ("remoteok", "all"):
+        try:
+            raw_jobs.extend(RemoteOKScraper().scrape(query))
+        except Exception:
+            pass
+
+    if source in ("greenhouse", "all"):
+        try:
+            raw_jobs.extend(GreenhouseScraper().scrape(query))
+        except Exception:
+            pass
+
+    if source in ("lever", "all"):
+        try:
+            raw_jobs.extend(LeverScraper().scrape(query))
+        except Exception:
+            pass
 
     if not raw_jobs:
-        msg = "No new jobs found from RemoteOK at this time."
+        msg = f"No new jobs found from {source.capitalize()} matching your criteria."
     else:
         results = ingest_jobs(raw_jobs)
         new_count = sum(1 for r in results if not r.was_duplicate)
         dup_count = len(results) - new_count
-        msg = f"Fetched {len(raw_jobs)} jobs from RemoteOK ({new_count} new, {dup_count} existing)."
+        msg = f"Discovered {len(raw_jobs)} jobs across {source.upper()} ({new_count} new, {dup_count} existing)."
 
     return RedirectResponse(url=f"/jobs?msg={msg}", status_code=303)
 
