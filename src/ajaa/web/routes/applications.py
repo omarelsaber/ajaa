@@ -234,6 +234,7 @@ async def submit_app_route(request: Request, app_id: str):
 
 
 @router.post("/applications/{app_id}/reject", response_class=HTMLResponse)
+@router.post("/applications/{app_id}/abandon", response_class=HTMLResponse)
 async def reject_app_route(request: Request, app_id: str):
     with get_session() as session:
         app = session.execute(
@@ -246,3 +247,43 @@ async def reject_app_route(request: Request, app_id: str):
             session.commit()
 
     return RedirectResponse(url="/applications?msg=Application+discarded.", status_code=303)
+
+
+# ── POST /applications/{app_id}/resolve ───────────────────────────────────────
+
+@router.post("/applications/{app_id}/resolve", response_class=HTMLResponse)
+async def resolve_app_route(
+    request: Request,
+    app_id: str,
+    resolution: str = "SUBMITTED",
+    notes: str = "Manually resolved by candidate",
+):
+    """
+    Resolve an application in UNCERTAIN, NEEDS_USER, or BLOCKED state (PRD §8.2, §28.4).
+    Resolutions: 'SUBMITTED' (confirmed externally) or 'REJECTED'/'ABANDONED'.
+    """
+    with get_session() as session:
+        app = session.execute(
+            sa.select(Application).where(Application.id == app_id)
+        ).scalars().first()
+
+        if app is None:
+            return RedirectResponse(url="/applications?err=Application+not+found", status_code=303)
+
+        app.previous_state = app.state
+        if resolution.upper() in ("SUBMITTED", "CONFIRMED"):
+            from datetime import datetime, timezone
+            app.state = ApplicationState.SUBMITTED.value
+            app.submitted_at = datetime.now(timezone.utc)
+            app.review_decision = "APPROVED"
+            app.review_notes = notes
+            msg = "Application marked as successfully SUBMITTED."
+        else:
+            app.state = ApplicationState.REJECTED.value
+            app.review_decision = "REJECTED"
+            app.review_notes = notes
+            msg = "Application marked as ABANDONED."
+
+        session.commit()
+
+    return RedirectResponse(url=f"/applications/{app_id}?msg={msg}", status_code=303)

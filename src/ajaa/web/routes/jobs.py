@@ -187,9 +187,10 @@ async def paste_job(
     return RedirectResponse(url=f"/jobs?msg={msg}", status_code=303)
 
 
-# ── POST /jobs/{job_id}/apply ─────────────────────────────────────────────────
+# ── POST /jobs/{job_id}/apply & /queue ────────────────────────────────────────
 
 @router.post("/jobs/{job_id}/apply", response_class=HTMLResponse)
+@router.post("/jobs/{job_id}/queue", response_class=HTMLResponse)
 async def queue_application(
     request: Request,
     job_id: str,
@@ -226,5 +227,83 @@ async def queue_application(
             msg = f"Application queued for {job.title or 'Job'} at {job.company or 'Company'}."
         else:
             msg = f"Application already queued (status: {existing.state})."
+
+    return RedirectResponse(url=f"/jobs?msg={msg}", status_code=303)
+
+
+# ── GET /jobs/{job_id} (Detail & Match Breakdown) ─────────────────────────────
+
+@router.get("/jobs/{job_id}", response_class=HTMLResponse)
+async def get_job_detail(
+    request: Request,
+    job_id: str,
+):
+    candidate = _get_or_create_candidate()
+    profile_dict = _get_profile_dict(candidate.id)
+    applied_ids = _get_applied_job_ids(candidate.id)
+
+    from ajaa.db.session import get_session
+    from ajaa.db.models import Job
+    from ajaa.matcher.scorer import score_job
+    import sqlalchemy as sa
+
+    with get_session() as session:
+        job = session.execute(
+            sa.select(Job).where(Job.id == job_id)
+        ).scalars().first()
+
+        if job is None:
+            return RedirectResponse(url="/jobs?err=Job+not+found", status_code=303)
+
+        job_dict = {
+            "id": job.id,
+            "title": job.title or "",
+            "company": job.company or "",
+            "location": job.location or "",
+            "remote_ok": job.remote_ok,
+            "jd_text": job.jd_text or "",
+            "apply_url": job.apply_url,
+            "source_connector": job.source_connector,
+            "discovered_at": job.discovered_at.strftime("%Y-%m-%d %H:%M") if job.discovered_at else "",
+            "quarantined": job.quarantined,
+            "quarantine_reason": job.quarantine_reason,
+        }
+
+        match_score = score_job(profile_dict, job_dict)
+        is_applied = job.id in applied_ids
+
+        return templates.TemplateResponse(request, "job_detail.html", {
+            "job": job,
+            "job_dict": job_dict,
+            "score": match_score,
+            "is_applied": is_applied,
+            "candidate": candidate,
+        })
+
+
+# ── POST /jobs/{job_id}/skip ──────────────────────────────────────────────────
+
+@router.post("/jobs/{job_id}/skip", response_class=HTMLResponse)
+async def skip_job(
+    request: Request,
+    job_id: str,
+    reason: Annotated[str, Form()] = "manual_skip",
+):
+    from ajaa.db.session import get_session
+    from ajaa.db.models import Job
+    import sqlalchemy as sa
+
+    with get_session() as session:
+        job = session.execute(
+            sa.select(Job).where(Job.id == job_id)
+        ).scalars().first()
+
+        if job:
+            job.is_stale = True
+            session.commit()
+            title = job.title or "Job"
+            msg = f"Skipped '{title}' (reason: {reason})."
+        else:
+            msg = "Job not found."
 
     return RedirectResponse(url=f"/jobs?msg={msg}", status_code=303)

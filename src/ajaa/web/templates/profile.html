@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Candidate Profile & Fact Ledger — AJAA{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+  <div>
+    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+      <h1 style="font-size:1.4rem; font-weight:700; margin:0;">Candidate Fact Ledger</h1>
+      <span style="font-size:0.75rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:999px; background:rgba(99,102,241,0.15); color:var(--accent-h);">
+        PRD §11 Durable Knowledge Layer
+      </span>
+    </div>
+    <p class="text-muted text-sm">
+      Deterministic canonical profile derived from append-only provenance facts.
+    </p>
+  </div>
+  <div style="text-align:right;">
+    <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:0.2rem;">Profile Version Hash</div>
+    <code style="font-size:0.75rem; background:rgba(255,255,255,0.06); padding:0.25rem 0.5rem; border-radius:6px; color:var(--accent-h); font-family:monospace;" title="{{ version_hash }}">
+      {{ version_hash[:16] }}...{{ version_hash[-8:] }}
+    </code>
+  </div>
+</div>
+
+{% if error %}
+<div class="alert alert-error" style="margin-bottom:1.25rem;">{{ error }}</div>
+{% endif %}
+{% if success %}
+<div class="alert alert-success" style="margin-bottom:1.25rem;">{{ success }}</div>
+{% endif %}
+
+<!-- Coverage Summary Bar -->
+<div class="card" style="margin-bottom:1.5rem;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+    <div>
+      <span style="font-weight:600; font-size:0.95rem;">Core Knowledge Coverage</span>
+      <span class="text-muted text-sm" style="margin-left:0.5rem;">({{ covered_count }}/{{ total_required }} slots verified)</span>
+    </div>
+    <span style="font-weight:700; font-size:1.1rem; color:{% if coverage_pct >= 80 %}#22c55e{% elif coverage_pct >= 50 %}#eab308{% else %}#ef4444{% endif %};">
+      {{ coverage_pct }}%
+    </span>
+  </div>
+  <div style="height:6px; background:var(--border); border-radius:999px; overflow:hidden; margin-bottom:0.75rem;">
+    <div style="width:{{ coverage_pct }}%; height:100%; background:{% if coverage_pct >= 80 %}#22c55e{% elif coverage_pct >= 50 %}#eab308{% else %}#ef4444{% endif %}; transition:width 0.3s ease;"></div>
+  </div>
+
+  {% if coverage_pct < 100 %}
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; font-size:0.8rem;">
+    <span class="text-muted">Missing required slots:</span>
+    <a href="/interview" class="btn btn-primary" style="font-size:0.78rem; padding:0.25rem 0.75rem;">
+      Run Adaptive Interview &rarr;
+    </a>
+  </div>
+  <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-top:0.5rem;">
+    {% for k, is_cov in coverage_map.items() %}
+      {% if not is_cov %}
+      <span style="background:rgba(239,68,68,0.1); color:#fca5a5; padding:0.15rem 0.5rem; border-radius:4px; font-size:0.75rem; font-family:monospace;">
+        {{ k }}
+      </span>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Add or Update Fact Form -->
+<div class="card" style="margin-bottom:1.5rem;">
+  <h2 style="font-size:0.95rem; font-weight:600; margin-bottom:0.75rem; color:var(--text-dim);">
+    &#10010; Add or Update Fact (Highest Precedence: USER_EXPLICIT Rank 1)
+  </h2>
+  <form method="post" action="/profile/facts" style="display:grid; grid-template-columns: 1fr 1.5fr auto auto; gap:0.6rem; align-items:center;">
+    <input
+      type="text"
+      name="fact_key"
+      placeholder="Fact Key (e.g. personal.name.full, skills.primary_language)"
+      required
+      list="common_keys"
+      style="font-size:0.85rem; padding:0.5rem 0.75rem;"
+    >
+    <datalist id="common_keys">
+      <option value="personal.name.full">
+      <option value="personal.email.primary">
+      <option value="personal.phone.primary">
+      <option value="personal.location.city">
+      <option value="personal.location.country">
+      <option value="skills.primary_language">
+      <option value="skills.languages">
+      <option value="skills.frameworks">
+      <option value="skills.cloud_platforms">
+      <option value="experience.current_title">
+      <option value="experience.total_years">
+      <option value="education.highest_degree">
+      <option value="preferences.target_roles">
+      <option value="preferences.work_mode">
+      <option value="preferences.salary_min_usd">
+      <option value="work_authorization.country">
+      <option value="work_authorization.requires_sponsorship">
+    </datalist>
+
+    <input
+      type="text"
+      name="fact_value"
+      placeholder="Fact Value (e.g. Python, Remote, 140000)"
+      required
+      style="font-size:0.85rem; padding:0.5rem 0.75rem;"
+    >
+
+    <select name="confidence" style="font-size:0.85rem; padding:0.5rem 0.5rem;">
+      <option value="CONFIRMED">CONFIRMED</option>
+      <option value="HIGH">HIGH</option>
+      <option value="MEDIUM">MEDIUM</option>
+      <option value="LOW">LOW</option>
+    </select>
+
+    <button type="submit" class="btn btn-primary" style="font-size:0.85rem; padding:0.5rem 1rem;">
+      Save Fact
+    </button>
+  </form>
+</div>
+
+<!-- Facts by Category -->
+<div style="display:flex; flex-direction:column; gap:1.25rem;">
+  {% for cat_name, facts in categories.items() %}
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;">
+      <h2 style="font-size:1rem; font-weight:600; margin:0;">{{ cat_name }}</h2>
+      <span class="badge" style="font-size:0.75rem;">{{ facts|length }} facts</span>
+    </div>
+
+    {% if facts %}
+    <div style="display:flex; flex-direction:column; gap:0.6rem;">
+      {% for f in facts %}
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0.75rem; background:var(--bg); border:1px solid var(--border); border-radius:6px; gap:1rem; flex-wrap:wrap;">
+        <div style="flex:1; min-width:220px;">
+          <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.2rem;">
+            <code style="font-size:0.82rem; color:var(--accent-h); font-weight:600;">{{ f.fact_key }}</code>
+            <span style="font-size:0.7rem; padding:0.1rem 0.4rem; border-radius:999px;
+              {% if f.source_rank <= 2 %}background:rgba(34,197,94,0.15); color:#22c55e;
+              {% elif f.source_rank <= 4 %}background:rgba(99,102,241,0.15); color:#818cf8;
+              {% else %}background:rgba(234,179,8,0.15); color:#eab308;{% endif %}">
+              {{ f.source_label }} (R{{ f.source_rank }})
+            </span>
+            <span style="font-size:0.7rem; padding:0.1rem 0.4rem; border-radius:999px; background:rgba(255,255,255,0.06); color:var(--text-dim);">
+              {{ f.confidence }}
+            </span>
+          </div>
+          <div style="font-size:0.95rem; font-weight:500; word-break:break-word;">
+            {{ f.fact_value }}
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <form method="post" action="/profile/facts/delete" onsubmit="return confirm('Remove fact {{ f.fact_key }}?');" style="margin:0;">
+            <input type="hidden" name="fact_key" value="{{ f.fact_key }}">
+            <button type="submit" class="btn btn-ghost" style="padding:0.25rem 0.55rem; font-size:0.75rem; color:#f87171;">
+              Remove
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted text-sm" style="margin:0.5rem 0;">No facts in this category yet.</p>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

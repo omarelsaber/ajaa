@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Metrics &amp; Observability — AJAA{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+  <div>
+    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+      <h1 style="font-size:1.4rem; font-weight:700; margin:0;">Operational Metrics</h1>
+      <span style="font-size:0.75rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:999px; background:rgba(99,102,241,0.15); color:var(--accent-h);">
+        PRD §32 Observability
+      </span>
+    </div>
+    <p class="text-muted text-sm">
+      Live application throughput, safety ceiling headroom, and cryptographic audit integrity.
+    </p>
+  </div>
+  <div>
+    <a href="/metrics?format=json" target="_blank" class="btn btn-ghost" style="font-size:0.8rem; padding:0.35rem 0.75rem;">
+      Raw JSON API &rarr;
+    </a>
+  </div>
+</div>
+
+<!-- 4 Key Stat Cards -->
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+  <!-- Ceiling Headroom -->
+  <div class="card" style="padding:1.25rem;">
+    <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:0.25rem;">Safety Ceiling Headroom</div>
+    <div style="font-size:1.5rem; font-weight:700; color:{% if m.applications.headroom_remaining > 5 %}#22c55e{% else %}#ef4444{% endif %};">
+      {{ m.applications.submitted_today }} / {{ m.applications.daily_ceiling }}
+    </div>
+    <div class="text-muted text-sm" style="font-size:0.75rem;">
+      {{ m.applications.headroom_remaining }} remaining today
+    </div>
+  </div>
+
+  <!-- Audit Hash Chain -->
+  <div class="card" style="padding:1.25rem;">
+    <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:0.25rem;">Audit Log Hash Chain</div>
+    <div style="font-size:1.25rem; font-weight:700; color:{% if m.audit.hash_chain_verified %}#22c55e{% else %}#ef4444{% endif %}; margin-top:0.2rem;">
+      {% if m.audit.hash_chain_verified %}&#10003; VALID CHAIN{% else %}&#9888; TAMPERED{% endif %}
+    </div>
+    <div class="text-muted text-sm" style="font-size:0.75rem;">
+      PRD §23.7 SHA-256 Chain
+    </div>
+  </div>
+
+  <!-- Calibration Gate -->
+  <div class="card" style="padding:1.25rem;">
+    <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:0.25rem;">Auto-Apply Calibration Gate</div>
+    <div style="font-size:1.25rem; font-weight:700; color:{% if m.candidate.is_calibrated %}#22c55e{% else %}#eab308{% endif %}; margin-top:0.2rem;">
+      {% if m.candidate.is_calibrated %}CALIBRATED{% else %}UNCALIBRATED{% endif %}
+    </div>
+    <div class="text-muted text-sm" style="font-size:0.75rem;">
+      {% if m.candidate.is_calibrated %}Auto-apply unblocked{% else %}Auto-apply locked{% endif %}
+    </div>
+  </div>
+
+  <!-- Discovered Jobs -->
+  <div class="card" style="padding:1.25rem;">
+    <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:0.25rem;">Active Jobs Discovered</div>
+    <div style="font-size:1.5rem; font-weight:700; color:var(--text);">
+      {{ m.jobs.active }}
+    </div>
+    <div class="text-muted text-sm" style="font-size:0.75rem;">
+      {{ m.jobs.quarantined }} quarantined (I3)
+    </div>
+  </div>
+</div>
+
+<!-- Application Pipeline Distribution -->
+<div class="card" style="margin-bottom:1.5rem;">
+  <h2 style="font-size:1rem; font-weight:700; margin-bottom:1rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;">
+    Application State Distribution
+  </h2>
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:0.75rem;">
+    {% for state_name in ['QUEUED', 'PREPARING', 'READY_FOR_REVIEW', 'APPROVED', 'SUBMITTED', 'UNCERTAIN', 'FAILED', 'REJECTED'] %}
+    {% set count = m.applications.by_state.get(state_name, 0) %}
+    <div style="background:var(--bg); border:1px solid var(--border); padding:0.75rem; border-radius:6px; text-align:center;">
+      <div style="font-size:0.75rem; font-weight:600; color:var(--text-dim); margin-bottom:0.2rem;">
+        {{ state_name }}
+      </div>
+      <div style="font-size:1.25rem; font-weight:700; color:{% if state_name == 'SUBMITTED' %}#22c55e{% elif state_name == 'UNCERTAIN' %}#eab308{% elif state_name == 'FAILED' %}#ef4444{% else %}var(--text){% endif %};">
+        {{ count }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- AI / LLM Usage -->
+<div class="card">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+    <h2 style="font-size:1rem; font-weight:700; margin:0;">
+      LLM Bounded Call Economics
+    </h2>
+    <span class="badge" style="font-size:0.75rem;">6 Bounded Call Sites</span>
+  </div>
+  <p class="text-muted text-sm" style="margin-bottom:1rem;">
+    AJAA enforces strict bounded call sites with zero unbounded loops or recursion.
+  </p>
+
+  <div style="display:flex; gap:1.5rem; flex-wrap:wrap;">
+    <div>
+      <div style="font-size:0.75rem; color:var(--text-dim);">Total LLM Calls Logged</div>
+      <div style="font-size:1.25rem; font-weight:700; color:var(--text);">{{ m.llm.total_calls }}</div>
+    </div>
+    <div>
+      <div style="font-size:0.75rem; color:var(--text-dim);">Estimated Total API Spend</div>
+      <div style="font-size:1.25rem; font-weight:700; color:#22c55e;">${{ "%.4f"|format(m.llm.total_cost_usd) }}</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

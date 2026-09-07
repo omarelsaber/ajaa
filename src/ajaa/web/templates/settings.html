@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Settings &amp; Policy — AJAA{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+  <div>
+    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+      <h1 style="font-size:1.4rem; font-weight:700; margin:0;">Settings &amp; System Policy</h1>
+      <span style="font-size:0.75rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:999px; background:rgba(99,102,241,0.15); color:var(--accent-h);">
+        PRD §26 Safety &amp; Governance
+      </span>
+    </div>
+    <p class="text-muted text-sm">
+      Strict technical separation between engineering safety ceilings and candidate operational policies.
+    </p>
+  </div>
+</div>
+
+{% if error %}
+<div class="alert alert-error" style="margin-bottom:1.25rem;">{{ error }}</div>
+{% endif %}
+{% if success %}
+<div class="alert alert-success" style="margin-bottom:1.25rem;">{{ success }}</div>
+{% endif %}
+
+<!-- Card 1: Safety Ceilings -->
+<div class="card" style="margin-bottom:1.5rem; border-left: 4px solid #ef4444;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+    <h2 style="font-size:1.05rem; font-weight:700; color:#f87171; margin:0;">
+      &#128737; Engineering Safety Ceilings
+    </h2>
+    <span style="font-size:0.72rem; font-weight:700; background:rgba(239,68,68,0.15); color:#ef4444; padding:0.2rem 0.5rem; border-radius:4px; text-transform:uppercase;">
+      Hard Stops &bull; Non-Overridable
+    </span>
+  </div>
+  <p class="text-muted text-sm" style="margin-bottom:1rem;">
+    These guard rails prevent runaway loops, account bans, or accidental spam. No configuration flag or rule can raise these numbers (PRD §26.1).
+  </p>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem;">
+    <div style="background:var(--bg); border:1px solid var(--border); padding:0.75rem; border-radius:6px;">
+      <div style="font-size:0.75rem; color:var(--text-dim);">Max Applications Per Day</div>
+      <div style="font-size:1.1rem; font-weight:700; color:var(--text);">{{ safety_ceilings.max_applications_per_day }} apps/day</div>
+    </div>
+    <div style="background:var(--bg); border:1px solid var(--border); padding:0.75rem; border-radius:6px;">
+      <div style="font-size:0.75rem; color:var(--text-dim);">Max Browser Concurrency</div>
+      <div style="font-size:1.1rem; font-weight:700; color:var(--text);">{{ safety_ceilings.max_browser_concurrency }} parallel instances</div>
+    </div>
+    <div style="background:var(--bg); border:1px solid var(--border); padding:0.75rem; border-radius:6px;">
+      <div style="font-size:0.75rem; color:var(--text-dim);">Consent Checkbox (Invariant I6)</div>
+      <div style="font-size:0.85rem; font-weight:600; color:#22c55e;">{{ safety_ceilings.consent_auto_check }}</div>
+    </div>
+    <div style="background:var(--bg); border:1px solid var(--border); padding:0.75rem; border-radius:6px;">
+      <div style="font-size:0.75rem; color:var(--text-dim);">Navigation Allowlist (Invariant I10)</div>
+      <div style="font-size:0.85rem; font-weight:600; color:#22c55e;">{{ safety_ceilings.route_navigation_allowlist }}</div>
+    </div>
+    <div style="background:var(--bg); border:1px solid var(--border); padding:0.75rem; border-radius:6px;">
+      <div style="font-size:0.75rem; color:var(--text-dim);">Adversarial Defense (Invariant I3)</div>
+      <div style="font-size:0.85rem; font-weight:600; color:#22c55e;">{{ safety_ceilings.injection_prefilter }}</div>
+    </div>
+    <div style="background:var(--bg); border:1px solid var(--border); padding:0.75rem; border-radius:6px;">
+      <div style="font-size:0.75rem; color:var(--text-dim);">CAPTCHA Encounter</div>
+      <div style="font-size:0.85rem; font-weight:600; color:#eab308;">{{ safety_ceilings.captcha_solving }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Operational Policy -->
+<div class="card" style="margin-bottom:1.5rem; border-left: 4px solid var(--accent);">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+    <h2 style="font-size:1.05rem; font-weight:700; color:var(--accent-h); margin:0;">
+      &#9881; Operational Policy (Candidate Preferences)
+    </h2>
+    <span style="font-size:0.72rem; font-weight:700; background:rgba(99,102,241,0.15); color:var(--accent-h); padding:0.2rem 0.5rem; border-radius:4px; text-transform:uppercase;">
+      User Configurable
+    </span>
+  </div>
+  <p class="text-muted text-sm" style="margin-bottom:1rem;">
+    Your personal target and review rhythm. This can never exceed the safety ceiling.
+  </p>
+
+  <form method="post" action="/settings" style="display:flex; flex-direction:column; gap:1rem;">
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:1rem;">
+      <div>
+        <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:0.35rem;">
+          Daily Application Target (Blank = Unset)
+        </label>
+        <input
+          type="number"
+          name="target_daily"
+          value="{{ operational_policy.target_applications_per_day or '' }}"
+          placeholder="e.g. 5 (leave blank to approve batches by hand)"
+          min="1"
+          max="{{ safety_ceilings.max_applications_per_day }}"
+          style="font-size:0.85rem; padding:0.5rem 0.75rem;"
+        >
+        <span class="text-muted text-sm" style="font-size:0.75rem; display:block; margin-top:0.25rem;">
+          Must be &le; Safety Ceiling ({{ safety_ceilings.max_applications_per_day }}).
+        </span>
+      </div>
+
+      <div>
+        <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:0.35rem;">
+          Application Review Mode
+        </label>
+        <select name="review_mode" style="font-size:0.85rem; padding:0.5rem 0.75rem;">
+          <option value="always" {% if operational_policy.default_review_mode == 'always' %}selected{% endif %}>
+            always — Candidate reviews and approves every single application before submit
+          </option>
+          <option value="first_n_per_connector" {% if operational_policy.default_review_mode == 'first_n_per_connector' %}selected{% endif %}>
+            first_n_per_connector — Review first 5 applications per connector, then auto-submit
+          </option>
+          <option value="above_score_threshold" {% if operational_policy.default_review_mode == 'above_score_threshold' %}selected{% endif %}>
+            above_score_threshold — Auto-submit only when match score exceeds calibrated threshold
+          </option>
+          <option value="never" {% if operational_policy.default_review_mode == 'never' %}selected{% endif %}>
+            never — Autonomous submission (strictly subject to never_auto_submit_if floor)
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <button type="submit" class="btn btn-primary" style="font-size:0.85rem; padding:0.5rem 1.25rem;">
+        Save Operational Policy
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Card 3: ATS Connectors -->
+<div class="card">
+  <h2 style="font-size:1.05rem; font-weight:700; margin-bottom:0.75rem;">
+    &#128268; ATS &amp; Board Connectors
+  </h2>
+  <div style="display:flex; flex-direction:column; gap:0.6rem;">
+    {% for conn in connectors %}
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0.75rem; background:var(--bg); border:1px solid var(--border); border-radius:6px;">
+      <div>
+        <div style="font-weight:600; font-size:0.9rem;">{{ conn.name }}</div>
+        <div class="text-muted text-sm" style="font-size:0.75rem;">{{ conn.type }}</div>
+      </div>
+      <span style="font-size:0.75rem; font-weight:700; padding:0.2rem 0.55rem; border-radius:999px; background:rgba(34,197,94,0.15); color:#22c55e;">
+        &#10003; {{ conn.status }}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

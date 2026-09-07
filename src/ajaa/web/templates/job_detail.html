@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}{{ job.title or "Job Detail" }} — AJAA{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:1.25rem;">
+  <a href="/jobs" class="text-muted text-sm" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.3rem;">
+    &larr; Back to Discovered Jobs
+  </a>
+</div>
+
+<div class="card" style="margin-bottom:1.5rem; border-left: 4px solid {% if score.total >= 70 %}#22c55e{% elif score.total >= 50 %}#6366f1{% else %}#64748b{% endif %};">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1.5rem; flex-wrap:wrap; margin-bottom:1rem;">
+    <div>
+      <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.35rem;">
+        <h1 style="font-size:1.4rem; font-weight:700; margin:0;">
+          {{ job.title or "Untitled Role" }}
+        </h1>
+        <span style="font-size:0.75rem; font-weight:600; padding:0.15rem 0.5rem; border-radius:999px; background:rgba(255,255,255,0.06); color:var(--text-dim);">
+          {{ job.source_connector or "ATS" }}
+        </span>
+        {% if job.remote_ok %}
+        <span style="font-size:0.75rem; font-weight:600; padding:0.15rem 0.5rem; border-radius:999px; background:rgba(99,102,241,0.15); color:#818cf8;">
+          Remote Friendly
+        </span>
+        {% endif %}
+      </div>
+
+      <div style="font-size:1rem; font-weight:600; color:var(--text); margin-bottom:0.25rem;">
+        {{ job.company or "Unknown Company" }}
+        {% if job.location %}<span class="text-muted text-sm" style="font-weight:400;">&bull; {{ job.location }}</span>{% endif %}
+      </div>
+      <div class="text-muted text-sm">
+        Discovered on {{ job_dict.discovered_at }}
+      </div>
+    </div>
+
+    <!-- Total Match Badge -->
+    <div style="text-align:right;">
+      <div style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.5rem 1rem; border-radius:8px; font-weight:700; font-size:1.25rem;
+        background:{% if score.total >= 70 %}rgba(34,197,94,0.12); color:#22c55e; border:1px solid rgba(34,197,94,0.25);
+        {% elif score.total >= 50 %}rgba(99,102,241,0.12); color:#818cf8; border:1px solid rgba(99,102,241,0.25);
+        {% else %}rgba(148,163,184,0.1); color:#94a3b8; border:1px solid rgba(148,163,184,0.2);{% endif %}">
+        <span>{{ score.total }}%</span>
+        <span style="font-size:0.85rem; font-weight:500;">Match</span>
+      </div>
+    </div>
+  </div>
+
+  {% if job.quarantined %}
+  <div class="alert alert-error" style="margin-bottom:1rem;">
+    <strong>&#9888; Quarantined by Adversarial Pre-Filter (Invariant I3):</strong>
+    Suspected prompt injection or hostile instructions detected in job description. Auto-apply is permanently blocked for this opportunity.
+    {% if job.quarantine_reason %}<div class="text-sm mt-1">Reason: {{ job.quarantine_reason }}</div>{% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Match Score Breakdown (PRD §20) -->
+  <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:1.25rem; margin-bottom:1.25rem;">
+    <h3 style="font-size:0.9rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim); margin-bottom:1rem;">
+      Match Breakdown &amp; Fit Analysis
+    </h3>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:1rem; margin-bottom:1rem;">
+      <div>
+        <div style="font-size:0.75rem; color:var(--text-dim);">Role Relevance</div>
+        <div style="font-size:1.1rem; font-weight:700; color:var(--text);">{{ score.title_score }}/30</div>
+      </div>
+      <div>
+        <div style="font-size:0.75rem; color:var(--text-dim);">Skill Match</div>
+        <div style="font-size:1.1rem; font-weight:700; color:var(--text);">{{ score.skill_score }}/25</div>
+      </div>
+      <div>
+        <div style="font-size:0.75rem; color:var(--text-dim);">Salary Fit</div>
+        <div style="font-size:1.1rem; font-weight:700; color:var(--text);">{{ score.salary_score }}/20</div>
+      </div>
+      <div>
+        <div style="font-size:0.75rem; color:var(--text-dim);">Location Fit</div>
+        <div style="font-size:1.1rem; font-weight:700; color:var(--text);">{{ score.location_score }}/15</div>
+      </div>
+      <div>
+        <div style="font-size:0.75rem; color:var(--text-dim);">Work Auth</div>
+        <div style="font-size:1.1rem; font-weight:700; color:var(--text);">{{ score.authorization_score }}/10</div>
+      </div>
+    </div>
+
+    <!-- Skills matched -->
+    <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center; font-size:0.85rem; border-top:1px solid var(--border); padding-top:0.75rem;">
+      <span class="text-muted">Skills Found in JD:</span>
+      {% if score.matched_skills %}
+        {% for sk in score.matched_skills %}
+        <span style="background:rgba(34,197,94,0.15); color:#22c55e; padding:0.15rem 0.5rem; border-radius:4px; font-weight:500;">
+          &#10003; {{ sk }}
+        </span>
+        {% endfor %}
+      {% else %}
+        <span class="text-muted">No explicit overlap with candidate skill ledger</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Action Row -->
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+    <a href="{{ job.apply_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost" style="font-size:0.85rem;">
+      Open Application Site &nearr;
+    </a>
+
+    <div style="display:flex; align-items:center; gap:0.6rem;">
+      <form method="post" action="/jobs/{{ job.id }}/skip" style="margin:0;">
+        <button type="submit" class="btn btn-ghost" style="font-size:0.85rem; color:#f87171;" title="Skip this job and exclude from matches">
+          &#10005; Skip Job
+        </button>
+      </form>
+
+      {% if is_applied %}
+      <span style="background:rgba(34,197,94,0.15); color:#22c55e; padding:0.5rem 1rem; border-radius:7px; font-size:0.85rem; font-weight:600;">
+        &#10003; Queued for Application
+      </span>
+      {% else %}
+      <form method="post" action="/jobs/{{ job.id }}/apply" style="margin:0;">
+        <button type="submit" class="btn btn-primary" style="font-size:0.85rem; padding:0.5rem 1.25rem;">
+          Queue Application &rarr;
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Job Description Card -->
+<div class="card">
+  <h2 style="font-size:1.05rem; font-weight:700; margin-bottom:1rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;">
+    Job Description
+  </h2>
+  {% if job.jd_text %}
+  <div style="white-space:pre-wrap; font-size:0.92rem; line-height:1.7; color:var(--text); word-break:break-word;">
+    {{ job.jd_text }}
+  </div>
+  {% else %}
+  <p class="text-muted text-sm">No full description text was captured for this job posting.</p>
+  {% endif %}
+</div>
+{% endblock %}
