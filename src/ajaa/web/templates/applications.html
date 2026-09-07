@@ -94,6 +94,33 @@
     </div>
     {% endif %}
 
+    <!-- Audit Events Timeline -->
+    {% if app.audit_events %}
+    <details style="font-size:0.8rem; margin-top:0.25rem;">
+      <summary style="color:var(--fg-muted); cursor:pointer; font-weight:600;">
+        &#128220; Immutable Audit Trail ({{ app.audit_events|length }} events recorded)
+      </summary>
+      <div style="margin-top:0.5rem; display:flex; flex-direction:column; gap:0.35rem; padding-left:0.5rem; border-left:2px solid var(--border);">
+        {% for ev in app.audit_events %}
+        <div style="display:flex; gap:0.6rem; align-items:center;">
+          <span style="color:var(--fg-muted); font-family:monospace; font-size:0.75rem;">{{ ev.time }}</span>
+          <span style="font-weight:600; color:var(--accent);">{{ ev.event_type }}</span>
+          <span style="color:var(--fg-muted); font-size:0.75rem;">({{ ev.transition }})</span>
+        </div>
+        {% endfor %}
+      </div>
+    </details>
+    {% endif %}
+
+    <!-- Footer Links -->
+    {% if app.job and app.job.apply_url %}
+    <div style="margin-top:0.25rem; font-size:0.8rem;">
+      <a href="{{ app.job.apply_url }}" target="_blank" rel="noopener noreferrer" style="color:var(--fg-muted); text-decoration:underline;">
+        View Job Posting &nearr;
+      </a>
+    </div>
+    {% endif %}
+
   </div>
   {% endfor %}
 </div>

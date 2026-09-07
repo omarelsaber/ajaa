@@ -24,7 +24,7 @@ from ajaa.application.state_machine import (
 )
 from ajaa.db.repositories import candidate as candidate_repo
 from ajaa.db.session import get_session
-from ajaa.db.models import Application, ApplicationAnswer, Job
+from ajaa.db.models import Application, ApplicationAnswer, AuditEvent, Job
 import sqlalchemy as sa
 
 router = APIRouter()
@@ -63,6 +63,12 @@ async def list_applications(
                 sa.select(ApplicationAnswer).where(ApplicationAnswer.application_id == app.id)
             ).scalars().all()
 
+            events = session.execute(
+                sa.select(AuditEvent)
+                .where(AuditEvent.application_id == app.id)
+                .order_by(AuditEvent.occurred_at.asc())
+            ).scalars().all()
+
             app_list.append({
                 "id": app.id,
                 "state": app.state,
@@ -84,6 +90,14 @@ async def list_applications(
                         "source": a.answer_source,
                     }
                     for a in answers
+                ],
+                "audit_events": [
+                    {
+                        "time": e.occurred_at.strftime("%H:%M:%S"),
+                        "event_type": e.event_type,
+                        "transition": f"{e.from_state} → {e.to_state}" if e.from_state else e.to_state,
+                    }
+                    for e in events
                 ],
             })
 
