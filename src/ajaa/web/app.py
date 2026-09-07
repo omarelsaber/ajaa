@@ -93,6 +93,13 @@ async def dashboard(request: Request):
                 )
             ).scalar_one()
 
+            stats["applications_submitted"] = session.execute(
+                sa.select(sa.func.count()).select_from(Application).where(
+                    Application.candidate_id == candidate.id,
+                    Application.state == "SUBMITTED",
+                )
+            ).scalar_one()
+
             stats["jobs_total"] = session.execute(
                 sa.select(sa.func.count()).select_from(Job).where(Job.is_stale == False)
             ).scalar_one()
