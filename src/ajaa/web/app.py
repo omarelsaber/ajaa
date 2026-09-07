@@ -59,7 +59,13 @@ async def dashboard(request: Request):
     corpus = get_corpus(questions_dir)
 
     candidate = get_or_none()
-    stats = {"profile_pct": 0, "applications_total": 0, "applications_today": 0}
+    stats = {
+        "profile_pct": 0,
+        "applications_total": 0,
+        "applications_today": 0,
+        "jobs_total": 0,
+        "cvs_total": 0,
+    }
 
     if candidate:
         required = corpus.keys_required()
@@ -69,7 +75,7 @@ async def dashboard(request: Request):
 
         import sqlalchemy as sa
         from ajaa.db.session import get_session
-        from ajaa.db.models import Application
+        from ajaa.db.models import Application, Job, CV
         from datetime import date, datetime
 
         with get_session() as session:
@@ -84,6 +90,17 @@ async def dashboard(request: Request):
                 sa.select(sa.func.count()).select_from(Application).where(
                     Application.candidate_id == candidate.id,
                     Application.created_at >= today_start,
+                )
+            ).scalar_one()
+
+            stats["jobs_total"] = session.execute(
+                sa.select(sa.func.count()).select_from(Job).where(Job.is_stale == False)
+            ).scalar_one()
+
+            stats["cvs_total"] = session.execute(
+                sa.select(sa.func.count()).select_from(CV).where(
+                    CV.candidate_id == candidate.id,
+                    CV.is_active == True,
                 )
             ).scalar_one()
 

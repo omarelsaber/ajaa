@@ -2,28 +2,47 @@
 {% block title %}Dashboard — AJAA{% endblock %}
 
 {% block content %}
-<h1 style="font-size:1.6rem; font-weight:700; margin-bottom:0.4rem;">
-  Welcome{% if candidate and candidate.display_name != "Me" %}, {{ candidate.display_name }}{% endif %}
-</h1>
-<p class="text-muted text-sm" style="margin-bottom:2rem;">
-  Autonomous Job Application Agent &mdash; v0.1 alpha
-</p>
+<div style="margin-bottom:2rem;">
+  <h1 style="font-size:1.6rem; font-weight:700; margin-bottom:0.4rem;">
+    Welcome{% if candidate and candidate.display_name != "Me" %}, {{ candidate.display_name }}{% endif %}
+  </h1>
+  <p class="text-muted text-sm">
+    Autonomous Job Application Agent &mdash; v0.1 alpha
+  </p>
+</div>
 
+<!-- Stats Grid -->
 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:2rem;">
   <div class="card">
     <div style="font-size:1.75rem; font-weight:700; color:var(--accent);">{{ stats.profile_pct }}%</div>
     <div class="text-muted text-sm mt-1">Profile complete</div>
-    <a href="/interview" class="btn btn-primary mt-2" style="font-size:0.8rem; padding:0.4rem 0.85rem;">
+    <a href="/interview" class="btn btn-primary mt-2" style="font-size:0.8rem; padding:0.35rem 0.75rem; display:inline-block;">
       {% if stats.profile_pct < 100 %}Complete profile{% else %}Review profile{% endif %}
     </a>
   </div>
+
+  <div class="card">
+    <div style="font-size:1.75rem; font-weight:700; color:var(--accent);">{{ stats.jobs_total }}</div>
+    <div class="text-muted text-sm mt-1">Discovered jobs</div>
+    <a href="/jobs" class="btn btn-ghost mt-2" style="font-size:0.8rem; padding:0.35rem 0.75rem; display:inline-block;">
+      Match &amp; Discover &rarr;
+    </a>
+  </div>
+
   <div class="card">
     <div style="font-size:1.75rem; font-weight:700; color:var(--accent);">{{ stats.applications_total }}</div>
-    <div class="text-muted text-sm mt-1">Applications total</div>
+    <div class="text-muted text-sm mt-1">Applications tracked</div>
+    <a href="/applications" class="btn btn-ghost mt-2" style="font-size:0.8rem; padding:0.35rem 0.75rem; display:inline-block;">
+      Tracker &rarr;
+    </a>
   </div>
+
   <div class="card">
-    <div style="font-size:1.75rem; font-weight:700; color:var(--accent);">{{ stats.applications_today }}</div>
-    <div class="text-muted text-sm mt-1">Applied today</div>
+    <div style="font-size:1.75rem; font-weight:700; color:var(--accent);">{{ stats.cvs_total }}</div>
+    <div class="text-muted text-sm mt-1">Uploaded CVs</div>
+    <a href="/cv" class="btn btn-ghost mt-2" style="font-size:0.8rem; padding:0.35rem 0.75rem; display:inline-block;">
+      Manage CVs &rarr;
+    </a>
   </div>
 </div>
 
@@ -34,7 +53,7 @@
 </div>
 {% else %}
 <div class="alert alert-success">
-  &#10003; Profile complete — AJAA is ready to match and apply.
+  &#10003; Profile complete &mdash; AJAA is ready to match and apply.
 </div>
 {% endif %}
 {% endblock %}
